@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { Wallet, Utensils, Home, Car, Film } from "lucide-react";
+import { Wallet, Utensils, Home, Car, Film, BookOpen, ShoppingBag, Heart, HelpCircle } from "lucide-react";
+import { useBudgets } from "@/hooks/useBudgets";
+import { useTransactions } from "@/hooks/useTransactions";
 
 interface BudgetItem {
   name: string;
@@ -11,6 +13,16 @@ interface BudgetItem {
   iconColor: string;
   iconBg: string;
 }
+
+const CATEGORY_ICONS: Record<string, { icon: typeof Utensils; color: string; bg: string }> = {
+  Food: { icon: Utensils, color: "text-amber-600", bg: "bg-amber-50" },
+  Housing: { icon: Home, color: "text-rose-600", bg: "bg-rose-50" },
+  Transportation: { icon: Car, color: "text-blue-600", bg: "bg-blue-50" },
+  Entertainment: { icon: Film, color: "text-purple-600", bg: "bg-purple-50" },
+  Education: { icon: BookOpen, color: "text-emerald-600", bg: "bg-emerald-50" },
+  Shopping: { icon: ShoppingBag, color: "text-sky-600", bg: "bg-sky-50" },
+  Healthcare: { icon: Heart, color: "text-red-600", bg: "bg-red-50" },
+};
 
 const DEFAULT_BUDGETS: BudgetItem[] = [
   {
@@ -56,6 +68,38 @@ const DEFAULT_BUDGETS: BudgetItem[] = [
 ];
 
 export default function BudgetsProgress() {
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+  const { budgets } = useBudgets(currentMonth);
+  const { transactions } = useTransactions();
+
+  const monthStr = currentMonth.substring(0, 7);
+  const spentMap: Record<string, number> = {};
+  transactions
+    .filter((t) => t.transaction_type === "expense" && t.transaction_date.startsWith(monthStr))
+    .forEach((t) => {
+      const cat = t.category || "Other";
+      spentMap[cat] = (spentMap[cat] || 0) + Number(t.amount);
+    });
+
+  const displayBudgets: BudgetItem[] =
+    budgets.length > 0
+      ? budgets.map((b) => {
+          const spent = spentMap[b.category] || 0;
+          const pct = Math.min(100, b.amount > 0 ? Math.round((spent / b.amount) * 100) : 0);
+          const iconConf = CATEGORY_ICONS[b.category] || { icon: HelpCircle, color: "text-slate-600", bg: "bg-slate-100" };
+          return {
+            name: b.category,
+            spent,
+            total: Number(b.amount),
+            percentage: pct,
+            color: pct > 90 ? "#f87171" : pct > 75 ? "#fbbf24" : "#0d9488",
+            icon: iconConf.icon,
+            iconColor: iconConf.color,
+            iconBg: iconConf.bg,
+          };
+        })
+      : DEFAULT_BUDGETS;
   return (
     <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
       <div>
@@ -82,7 +126,7 @@ export default function BudgetsProgress() {
 
         {/* Progress List */}
         <div className="space-y-4">
-          {DEFAULT_BUDGETS.map((item) => {
+          {displayBudgets.map((item) => {
             const Icon = item.icon;
             return (
               <div key={item.name}>

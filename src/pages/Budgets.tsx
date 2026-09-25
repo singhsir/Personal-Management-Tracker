@@ -1,18 +1,15 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { Plus, Trash2, Loader2, PiggyBank } from "lucide-react";
-import { supabase } from "@/lib/supabase";
 import { useAuthContext } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
+import { useBudgets } from "@/hooks/useBudgets";
 import { formatCurrency } from "@/lib/calculations";
 import { EXPENSE_CATEGORIES } from "@/lib/types";
-import type { Budget, NewBudget } from "@/lib/types";
 import EmptyState from "@/components/EmptyState";
 
 export default function Budgets() {
   const { profile } = useAuthContext();
   const { transactions } = useTransactions();
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [newAmount, setNewAmount] = useState("");
@@ -23,25 +20,7 @@ export default function Budgets() {
   const now = new Date();
   const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
 
-  const fetchBudgets = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from("budgets")
-      .select("*")
-      .eq("month", currentMonth)
-      .order("category", { ascending: true });
-
-    if (err) {
-      console.error("Budget fetch error:", err);
-    } else {
-      setBudgets((data ?? []) as Budget[]);
-    }
-    setLoading(false);
-  }, [currentMonth]);
-
-  useEffect(() => {
-    fetchBudgets();
-  }, [fetchBudgets]);
+  const { budgets, loading, addBudget, deleteBudget } = useBudgets(currentMonth);
 
   const spentByCategory = useMemo(() => {
     const monthStr = currentMonth.substring(0, 7);
@@ -70,39 +49,24 @@ export default function Budgets() {
     }
 
     setSaving(true);
-    const newBudget: NewBudget = {
+    const result = await addBudget({
       category: newCategory,
       month: currentMonth,
       amount: amt,
-    };
+    });
 
-    const { data, error: err } = await supabase
-      .from("budgets")
-      .upsert(newBudget, { onConflict: "user_id,category,month" })
-      .select()
-      .single();
-
-    if (err) {
-      setError(err.message);
-    } else {
-      setBudgets((prev) => {
-        const filtered = prev.filter((b) => b.category !== newCategory);
-        return [...filtered, data as Budget].sort((a, b) => a.category.localeCompare(b.category));
-      });
+    setSaving(false);
+    if (result) {
       setNewCategory("");
       setNewAmount("");
       setModalOpen(false);
+    } else {
+      setError("Failed to save budget. Please try again.");
     }
-    setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    const { error: err } = await supabase.from("budgets").delete().eq("id", id);
-    if (err) {
-      console.error("Delete error:", err);
-    } else {
-      setBudgets((prev) => prev.filter((b) => b.id !== id));
-    }
+    await deleteBudget(id);
   };
 
   const availableCategories = EXPENSE_CATEGORIES.filter(

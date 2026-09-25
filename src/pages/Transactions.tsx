@@ -4,7 +4,6 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
 import { categorizeTransaction } from "@/lib/api";
 import { formatCurrency, formatDate } from "@/lib/calculations";
-import { EXPENSE_CATEGORIES } from "@/lib/types";
 import type { Transaction, NewTransaction } from "@/lib/types";
 import { supabase } from "@/lib/supabase";
 import TransactionModal from "@/components/TransactionModal";

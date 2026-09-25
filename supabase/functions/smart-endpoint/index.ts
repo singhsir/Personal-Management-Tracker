@@ -346,7 +346,7 @@ function generateFallbackInsights(
     observations.push(`Your top 3 categories account for a significant portion of spending.`);
   }
 
-  for (const [cat, amt] of topCategories.slice(0, 2)) {
+  for (const [cat] of topCategories.slice(0, 2)) {
     areasToReview.push(`Consider reviewing your ${cat} spending.`);
   }
 

@@ -34,6 +34,8 @@ export default function SpendingChart({
   data = DEFAULT_PULSE_DATA,
   currency = "INR",
 }: SpendingChartProps) {
+  const currSymbol = currency === "INR" ? "₹" : currency === "USD" ? "$" : `${currency} `;
+
   const formatYAxis = (val: number) => {
     if (val === 0) return "0";
     return `${(val / 1000).toFixed(0)}K`;
@@ -85,7 +87,7 @@ export default function SpendingChart({
             />
             <Tooltip
               formatter={(value) => [
-                `₹${Number(value).toLocaleString("en-IN")}`,
+                `${currSymbol}${Number(value).toLocaleString()}`,
                 "",
               ]}
               contentStyle={{

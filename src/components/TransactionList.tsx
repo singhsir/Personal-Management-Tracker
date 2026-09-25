@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Clock, Utensils, Car, Briefcase, PlayCircle, Tag } from "lucide-react";
+import { Clock, Utensils, Car, Briefcase, PlayCircle } from "lucide-react";
 import type { Transaction } from "@/lib/types";
 
 interface TransactionListProps {
@@ -65,8 +65,28 @@ const DEFAULT_RECENT = [
 
 export default function TransactionList({
   transactions,
+  currency = "INR",
   showViewAll = true,
 }: TransactionListProps) {
+  const displayList = transactions && transactions.length > 0
+    ? transactions.slice(0, 5).map((tx) => {
+        const isIncome = tx.transaction_type === "income";
+        const symbol = currency === "INR" ? "₹" : "$";
+        return {
+          id: tx.id,
+          title: tx.description,
+          sub: `${tx.category || "General"}${tx.subcategory ? ` · ${tx.subcategory}` : ""}`,
+          date: tx.transaction_date,
+          amount: `${isIncome ? "+" : "-"}${symbol}${Math.abs(tx.amount).toLocaleString()}`,
+          isIncome,
+          badge: tx.ai_categorized ? "✦ AI Categorized" : (isIncome ? "✦ Income" : "✦ Expense"),
+          badgeType: isIncome ? "income" : (tx.ai_categorized ? "ai" : "expense"),
+          icon: isIncome ? Briefcase : (tx.category === "Transportation" ? Car : (tx.category === "Entertainment" ? PlayCircle : Utensils)),
+          iconBg: isIncome ? "bg-teal-50" : "bg-rose-50",
+          iconColor: isIncome ? "text-teal-600" : "text-rose-500",
+        };
+      })
+    : DEFAULT_RECENT;
   return (
     <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
       <div>
@@ -95,7 +115,7 @@ export default function TransactionList({
 
         {/* Transactions List */}
         <div className="space-y-3.5">
-          {DEFAULT_RECENT.map((tx) => {
+          {displayList.map((tx) => {
             const Icon = tx.icon;
             return (
               <div key={tx.id} className="flex items-center justify-between">

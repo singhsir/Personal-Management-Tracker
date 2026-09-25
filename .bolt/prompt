@@ -1,7 +1,34 @@
-For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+Build "Personal Management Tracker", a production-grade personal finance and budget management web application with rich visuals, AI-powered transaction categorization, and dynamic analytics.
 
-By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
+Key Architectural & Design Principles:
+1. Design & UI Aesthetics:
+   - Modern, high-end dashboard interface with Tailwind CSS, custom gradients, clean typography, rounded cards, and responsive layouts.
+   - Use Lucide React icons for all navigational and contextual iconography.
+   - Never produce cookie-cutter or bare-bones MVPs; maintain rich, interactive micro-animations, badges, and progress bars.
+   - Module imports must use the `@/` path alias pointing to `src/` (e.g. `@/components/SpendingChart`).
 
-Use icons from lucide-react for logos.
-
-Import project modules with the `@/` path alias, which maps to `src/` (e.g. `@/components/Foo` == `src/components/Foo`), instead of deep relative paths like `../../components/Foo`.
+2. Core Functional Requirements:
+   - Financial Overview Dashboard:
+     * Live metrics: Total Income, Total Expenses, Net Savings, and Savings Rate dynamically calculated from transactions.
+     * Financial Health circular score gauge.
+     * Money Pulse trend chart (Income vs Expenses vs Savings over time) with currency-aware tooltips.
+     * Spending DNA category breakdown donut chart with legends and amounts.
+     * Monthly budget progress indicators.
+     * Recent activity transaction list with category icons and status badges.
+   - Transaction Management:
+     * Full CRUD for Income and Expenses with date, amount, description, type, and category selection.
+     * Automatic AI categorization workflow with confidence scoring.
+     * Multi-field filters: search query, transaction type (income/expense), category, and month filters, plus date sorting.
+     * Multi-selection checkboxes: row checkboxes and master select-all header checkbox.
+   - Demo Data Management:
+     * Pre-loaded sample transactions for immediate dashboard preview and testing.
+     * Prominent banner with a dedicated checkbox option: "Select all demo data" to check all sample items at once.
+     * "Delete all demo data at once" bulk deletion action with confirmation modal.
+     * "Load Demo Data" / "Clear Demo Data" toggles with persistent state (`finwise_demo_data_cleared`).
+     * Real user-added transactions are protected from demo deletions.
+   - Monthly Budgets:
+     * Category-specific monthly budget creation, tracking, and deletion.
+     * Real-time spending comparison against budget limits with visual progress bars.
+   - Offline & Local Storage Resilience:
+     * Seamless dual-mode persistence: automatically syncs to Supabase when authenticated, with automatic fallback to persistent browser storage (`localStorage`) in offline or guest mode.
+     * Prevents Row-Level Security (RLS) 42501 errors when operating without an active Supabase user session.

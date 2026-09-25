@@ -291,11 +291,32 @@ const DEFAULT_DEMO_TRANSACTIONS: Transaction[] = [
 ];
 
 export const DEMO_CLEARED_KEY = "finwise_demo_data_cleared";
+export const USER_TRANSACTIONS_KEY = "finwise_user_transactions";
+
+export const getSavedUserTransactions = (): Transaction[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(USER_TRANSACTIONS_KEY);
+    return raw ? (JSON.parse(raw) as Transaction[]) : [];
+  } catch {
+    return [];
+  }
+};
+
+export const saveUserTransactions = (txs: Transaction[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(USER_TRANSACTIONS_KEY, JSON.stringify(txs));
+  } catch (e) {
+    console.error("Error saving user transactions to localStorage:", e);
+  }
+};
 
 export const isDemoTransaction = (tx: Transaction): boolean => {
+  if (tx.id.startsWith("tx-user-")) return false;
   return (
     tx.user_id === "demo-jaggan-2026" ||
-    tx.id.startsWith("tx-") ||
+    (tx.id.startsWith("tx-") && !tx.id.startsWith("tx-user-")) ||
     tx.id.startsWith("demo-") ||
     tx.subcategory === "Demo"
   );
@@ -303,41 +324,55 @@ export const isDemoTransaction = (tx: Transaction): boolean => {
 
 export function useTransactions() {
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    if (typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true") {
-      return [];
+    const isCleared = typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true";
+    const localTxs = getSavedUserTransactions();
+    if (isCleared) {
+      return localTxs;
     }
-    return DEFAULT_DEMO_TRANSACTIONS;
+    return [...localTxs, ...DEFAULT_DEMO_TRANSACTIONS];
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
 
   const fetchTransactions = useCallback(async () => {
     try {
-      const { data, error: err } = await supabase
-        .from("transactions")
-        .select("*")
-        .order("transaction_date", { ascending: false })
-        .order("created_at", { ascending: false });
-
       const isCleared = typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true";
+      const localTxs = getSavedUserTransactions();
 
-      if (err) {
-        setTransactions(isCleared ? [] : DEFAULT_DEMO_TRANSACTIONS);
-        return;
+      let supabaseTxs: Transaction[] = [];
+      try {
+        const { data, error: err } = await supabase
+          .from("transactions")
+          .select("*")
+          .order("transaction_date", { ascending: false })
+          .order("created_at", { ascending: false });
+
+        if (!err && data) {
+          supabaseTxs = data as Transaction[];
+        }
+      } catch {
+        // Ignore Supabase connection or RLS errors in local/demo mode
       }
 
-      if (data && data.length > 0) {
-        if (isCleared) {
-          setTransactions((data as Transaction[]).filter((t) => !isDemoTransaction(t)));
-        } else {
-          setTransactions(data as Transaction[]);
+      const seen = new Set<string>();
+      const combinedUserTxs: Transaction[] = [];
+
+      for (const t of [...localTxs, ...supabaseTxs]) {
+        if (!seen.has(t.id) && !isDemoTransaction(t)) {
+          seen.add(t.id);
+          combinedUserTxs.push(t);
         }
+      }
+
+      if (isCleared) {
+        setTransactions(combinedUserTxs);
       } else {
-        setTransactions(isCleared ? [] : DEFAULT_DEMO_TRANSACTIONS);
+        setTransactions([...combinedUserTxs, ...DEFAULT_DEMO_TRANSACTIONS]);
       }
     } catch {
       const isCleared = typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true";
-      setTransactions(isCleared ? [] : DEFAULT_DEMO_TRANSACTIONS);
+      const localTxs = getSavedUserTransactions();
+      setTransactions(isCleared ? localTxs : [...localTxs, ...DEFAULT_DEMO_TRANSACTIONS]);
     } finally {
       setLoading(false);
     }
@@ -348,35 +383,69 @@ export function useTransactions() {
   }, [fetchTransactions]);
 
   const addTransaction = async (tx: NewTransaction): Promise<Transaction | null> => {
-    const { data, error: err } = await supabase
-      .from("transactions")
-      .insert(tx)
-      .select()
-      .single();
+    let savedTx: Transaction | null = null;
 
-    if (err) {
-      setError(err.message);
-      return null;
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const currentUserId = sessionData.session?.user?.id;
+
+      if (currentUserId) {
+        const { data, error: err } = await supabase
+          .from("transactions")
+          .insert({
+            ...tx,
+            user_id: currentUserId,
+          })
+          .select()
+          .single();
+
+        if (!err && data) {
+          savedTx = data as Transaction;
+        }
+      }
+    } catch {
+      // Fallback to local storage
     }
 
-    const newTx = data as Transaction;
-    setTransactions((prev) => [newTx, ...prev]);
-    return newTx;
+    if (!savedTx) {
+      savedTx = {
+        id: `tx-user-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        user_id: "local-user",
+        transaction_date: tx.transaction_date,
+        description: tx.description,
+        amount: Number(tx.amount),
+        transaction_type: tx.transaction_type,
+        category: tx.category || null,
+        subcategory: null,
+        ai_confidence: null,
+        ai_categorized: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      const existingLocal = getSavedUserTransactions();
+      saveUserTransactions([savedTx, ...existingLocal]);
+    }
+
+    setTransactions((prev) => [savedTx!, ...prev]);
+    return savedTx;
   };
 
   const updateTransaction = async (
     id: string,
     updates: Partial<NewTransaction>,
   ): Promise<boolean> => {
-    const { error: err } = await supabase
-      .from("transactions")
-      .update(updates)
-      .eq("id", id);
-
-    if (err) {
-      setError(err.message);
-      return false;
+    if (!id.startsWith("tx-user-") && !id.startsWith("tx-")) {
+      try {
+        await supabase.from("transactions").update(updates).eq("id", id);
+      } catch (err) {
+        console.error("Error updating in Supabase:", err);
+      }
     }
+
+    const local = getSavedUserTransactions();
+    const updatedLocal = local.map((t) => (t.id === id ? { ...t, ...updates } : t));
+    saveUserTransactions(updatedLocal);
 
     setTransactions((prev) =>
       prev.map((t) => (t.id === id ? { ...t, ...updates } : t)),
@@ -385,14 +454,17 @@ export function useTransactions() {
   };
 
   const deleteTransaction = async (id: string): Promise<boolean> => {
-    const isDemo = id.startsWith("tx-");
-    if (!isDemo) {
-      const { error: err } = await supabase.from("transactions").delete().eq("id", id);
-      if (err) {
-        setError(err.message);
-        return false;
+    if (!id.startsWith("tx-user-") && !id.startsWith("tx-")) {
+      try {
+        await supabase.from("transactions").delete().eq("id", id);
+      } catch (err) {
+        console.error("Error deleting from Supabase:", err);
       }
     }
+
+    const local = getSavedUserTransactions();
+    const filteredLocal = local.filter((t) => t.id !== id);
+    saveUserTransactions(filteredLocal);
 
     setTransactions((prev) => prev.filter((t) => t.id !== id));
     return true;
@@ -400,7 +472,7 @@ export function useTransactions() {
 
   const deleteMultipleTransactions = async (ids: string[]): Promise<boolean> => {
     const idsSet = new Set(ids);
-    const realIds = ids.filter((id) => !id.startsWith("tx-"));
+    const realIds = ids.filter((id) => !id.startsWith("tx-user-") && !id.startsWith("tx-"));
 
     if (realIds.length > 0) {
       try {
@@ -409,6 +481,10 @@ export function useTransactions() {
         console.error("Error deleting from supabase:", err);
       }
     }
+
+    const local = getSavedUserTransactions();
+    const filteredLocal = local.filter((t) => !idsSet.has(t.id));
+    saveUserTransactions(filteredLocal);
 
     setTransactions((prev) => {
       const remaining = prev.filter((t) => !idsSet.has(t.id));
@@ -444,10 +520,17 @@ export function useTransactions() {
     if (typeof window !== "undefined") {
       localStorage.removeItem(DEMO_CLEARED_KEY);
     }
-    setTransactions(DEFAULT_DEMO_TRANSACTIONS);
+    const localTxs = getSavedUserTransactions();
+    setTransactions([...localTxs, ...DEFAULT_DEMO_TRANSACTIONS]);
   };
 
   const updateTransactionCategory = (id: string, category: string, subcategory: string | null, confidence: number) => {
+    const local = getSavedUserTransactions();
+    const updatedLocal = local.map((t) =>
+      t.id === id ? { ...t, category, subcategory, ai_confidence: confidence, ai_categorized: true } : t,
+    );
+    saveUserTransactions(updatedLocal);
+
     setTransactions((prev) =>
       prev.map((t) =>
         t.id === id

@@ -290,8 +290,24 @@ const DEFAULT_DEMO_TRANSACTIONS: Transaction[] = [
   },
 ];
 
+export const DEMO_CLEARED_KEY = "finwise_demo_data_cleared";
+
+export const isDemoTransaction = (tx: Transaction): boolean => {
+  return (
+    tx.user_id === "demo-jaggan-2026" ||
+    tx.id.startsWith("tx-") ||
+    tx.id.startsWith("demo-") ||
+    tx.subcategory === "Demo"
+  );
+};
+
 export function useTransactions() {
-  const [transactions, setTransactions] = useState<Transaction[]>(DEFAULT_DEMO_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true") {
+      return [];
+    }
+    return DEFAULT_DEMO_TRANSACTIONS;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -303,18 +319,25 @@ export function useTransactions() {
         .order("transaction_date", { ascending: false })
         .order("created_at", { ascending: false });
 
+      const isCleared = typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true";
+
       if (err) {
-        setTransactions(DEFAULT_DEMO_TRANSACTIONS);
+        setTransactions(isCleared ? [] : DEFAULT_DEMO_TRANSACTIONS);
         return;
       }
 
       if (data && data.length > 0) {
-        setTransactions(data as Transaction[]);
+        if (isCleared) {
+          setTransactions((data as Transaction[]).filter((t) => !isDemoTransaction(t)));
+        } else {
+          setTransactions(data as Transaction[]);
+        }
       } else {
-        setTransactions(DEFAULT_DEMO_TRANSACTIONS);
+        setTransactions(isCleared ? [] : DEFAULT_DEMO_TRANSACTIONS);
       }
     } catch {
-      setTransactions(DEFAULT_DEMO_TRANSACTIONS);
+      const isCleared = typeof window !== "undefined" && localStorage.getItem(DEMO_CLEARED_KEY) === "true";
+      setTransactions(isCleared ? [] : DEFAULT_DEMO_TRANSACTIONS);
     } finally {
       setLoading(false);
     }
@@ -362,15 +385,66 @@ export function useTransactions() {
   };
 
   const deleteTransaction = async (id: string): Promise<boolean> => {
-    const { error: err } = await supabase.from("transactions").delete().eq("id", id);
-
-    if (err) {
-      setError(err.message);
-      return false;
+    const isDemo = id.startsWith("tx-");
+    if (!isDemo) {
+      const { error: err } = await supabase.from("transactions").delete().eq("id", id);
+      if (err) {
+        setError(err.message);
+        return false;
+      }
     }
 
     setTransactions((prev) => prev.filter((t) => t.id !== id));
     return true;
+  };
+
+  const deleteMultipleTransactions = async (ids: string[]): Promise<boolean> => {
+    const idsSet = new Set(ids);
+    const realIds = ids.filter((id) => !id.startsWith("tx-"));
+
+    if (realIds.length > 0) {
+      try {
+        await supabase.from("transactions").delete().in("id", realIds);
+      } catch (err) {
+        console.error("Error deleting from supabase:", err);
+      }
+    }
+
+    setTransactions((prev) => {
+      const remaining = prev.filter((t) => !idsSet.has(t.id));
+      const remainingDemo = remaining.filter(isDemoTransaction);
+      if (remainingDemo.length === 0 && typeof window !== "undefined") {
+        localStorage.setItem(DEMO_CLEARED_KEY, "true");
+      }
+      return remaining;
+    });
+
+    return true;
+  };
+
+  const clearAllDemoData = async (): Promise<boolean> => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(DEMO_CLEARED_KEY, "true");
+    }
+
+    try {
+      await supabase
+        .from("transactions")
+        .delete()
+        .or("user_id.eq.demo-jaggan-2026,subcategory.eq.Demo");
+    } catch (err) {
+      console.error("Supabase clear demo error:", err);
+    }
+
+    setTransactions((prev) => prev.filter((t) => !isDemoTransaction(t)));
+    return true;
+  };
+
+  const loadDemoData = async () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem(DEMO_CLEARED_KEY);
+    }
+    setTransactions(DEFAULT_DEMO_TRANSACTIONS);
   };
 
   const updateTransactionCategory = (id: string, category: string, subcategory: string | null, confidence: number) => {
@@ -383,14 +457,22 @@ export function useTransactions() {
     );
   };
 
+  const demoTransactions = transactions.filter(isDemoTransaction);
+  const hasDemoData = demoTransactions.length > 0;
+
   return {
     transactions,
     loading,
     error,
+    hasDemoData,
+    demoTransactions,
     fetchTransactions,
     addTransaction,
     updateTransaction,
     deleteTransaction,
+    deleteMultipleTransactions,
+    clearAllDemoData,
+    loadDemoData,
     updateTransactionCategory,
   };
 }

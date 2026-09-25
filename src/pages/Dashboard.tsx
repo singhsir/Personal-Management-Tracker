@@ -15,6 +15,8 @@ import { useAuthContext } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
 import type { NewTransaction } from "@/lib/types";
 
+import { Link } from "react-router-dom";
+import { calculateSummary, formatCurrency } from "@/lib/calculations";
 import FinancialHealthCard from "@/components/FinancialHealthCard";
 import SummaryCard from "@/components/SummaryCard";
 import SpendingChart from "@/components/SpendingChart";
@@ -26,13 +28,15 @@ import TransactionModal from "@/components/TransactionModal";
 
 export default function Dashboard() {
   const { profile } = useAuthContext();
-  const { addTransaction } = useTransactions();
+  const { transactions, hasDemoData, addTransaction } = useTransactions();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("September 2026");
   const [monthMenuOpen, setMonthMenuOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
 
   const displayName = profile?.full_name || "Jaggan";
+  const currency = profile?.currency || "INR";
+  const summary = calculateSummary(transactions);
 
   const handleAddTransaction = async (tx: NewTransaction) => {
     return await addTransaction(tx);
@@ -114,46 +118,68 @@ export default function Dashboard() {
         </div>
       </header>
 
+      {/* Demo Banner */}
+      {hasDemoData && (
+        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs shadow-2xs">
+          <div className="flex items-center gap-2.5 text-amber-900 font-medium">
+            <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
+            <span>
+              <strong>Sample Demo Data Active:</strong> Displaying pre-loaded records. You can delete all demo data at once using the checkbox option in Transactions.
+            </span>
+          </div>
+          <Link
+            to="/transactions"
+            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl whitespace-nowrap transition-colors"
+          >
+            Manage Demo Data →
+          </Link>
+        </div>
+      )}
+
       {/* Row 1: Financial Health (7 cols) + 2x2 Stat Cards (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7">
-          <FinancialHealthCard score={72} pointsDelta={8} savingsRate={66.4} />
+          <FinancialHealthCard
+            score={summary.totalIncome > 0 ? Math.min(100, Math.max(0, Math.round(50 + summary.savingsRate / 2))) : 0}
+            pointsDelta={summary.totalIncome > 0 ? 8 : 0}
+            savingsRate={summary.savingsRate}
+          />
         </div>
 
         <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <SummaryCard
             title="Total Income"
-            value="₹85,000"
+            value={formatCurrency(summary.totalIncome, currency)}
             icon={TrendingUp}
             trend="up"
-            trendLabel="+12.4%"
+            trendLabel={summary.totalIncome > 0 ? "+12.4%" : "0%"}
             accent="emerald"
             sparkColor="green"
           />
           <SummaryCard
             title="Total Expenses"
-            value="₹28,599"
+            value={formatCurrency(summary.totalExpenses, currency)}
             icon={TrendingDown}
             trend="down"
-            trendLabel="-4.2%"
+            trendLabel={summary.totalExpenses > 0 ? "-4.2%" : "0%"}
             accent="rose"
             sparkColor="red"
           />
           <SummaryCard
             title="Net Savings"
-            value="₹56,401"
+            value={formatCurrency(summary.savings, currency)}
             icon={Wallet}
             trend="up"
-            trendLabel="+28.6%"
+            trendLabel={summary.savings > 0 ? "+28.6%" : "0%"}
             accent="blue"
             sparkColor="green"
           />
           <SummaryCard
             title="Savings Rate"
-            value="66.4%"
+            value={`${summary.savingsRate.toFixed(1)}%`}
             icon={Percent}
             trend="up"
-            trendLabel="+6.8%"
+            trendLabel={summary.savingsRate > 0 ? "+6.8%" : "0%"}
             accent="amber"
             sparkColor="green"
           />
@@ -163,7 +189,7 @@ export default function Dashboard() {
       {/* Row 2: Money Pulse (7 cols) + AI Money Coach (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7">
-          <SpendingChart />
+          <SpendingChart currency={currency} />
         </div>
         <div className="lg:col-span-5">
           <AIMoneyCoach />
@@ -173,7 +199,7 @@ export default function Dashboard() {
       {/* Row 3: Spending DNA + Recent Activity + Budgets (3 equal columns) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <CategoryChart />
-        <TransactionList />
+        <TransactionList transactions={transactions} currency={currency} />
         <BudgetsProgress />
       </div>
 

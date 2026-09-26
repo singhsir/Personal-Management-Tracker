@@ -101,23 +101,23 @@ export default function BudgetsProgress() {
         })
       : DEFAULT_BUDGETS;
   return (
-    <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
+    <div className="bg-white dark:bg-[#072428] rounded-3xl p-6 border border-slate-200/80 dark:border-[#0e3b42] shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800">
               <Wallet className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">Budgets</h2>
-              <p className="text-xs text-slate-500 font-medium">Monthly budget progress</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">Budgets</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Monthly budget progress</p>
             </div>
           </div>
 
           <Link
             to="/budgets"
-            className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 group"
+            className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 flex items-center gap-1 group"
           >
             <span>View All</span>
             <span className="group-hover:translate-x-0.5 transition-transform">→</span>
@@ -132,19 +132,19 @@ export default function BudgetsProgress() {
               <div key={item.name}>
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className={`w-6 h-6 rounded-lg ${item.iconBg} ${item.iconColor} flex items-center justify-center`}>
+                    <span className={`w-6 h-6 rounded-lg ${item.iconBg} dark:bg-teal-950/60 ${item.iconColor} flex items-center justify-center`}>
                       <Icon className="w-3.5 h-3.5" />
                     </span>
-                    <span className="font-bold text-slate-800">{item.name}</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">{item.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-slate-600">
+                    <span className="font-semibold text-slate-600 dark:text-slate-300">
                       ₹{item.spent.toLocaleString("en-IN")} / ₹{item.total.toLocaleString("en-IN")}
                     </span>
-                    <span className="font-bold text-slate-500 text-[11px]">{item.percentage}%</span>
+                    <span className="font-bold text-slate-500 dark:text-slate-400 text-[11px]">{item.percentage}%</span>
                   </div>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-[#0c3137] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{

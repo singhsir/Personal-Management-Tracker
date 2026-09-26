@@ -3,7 +3,6 @@ import {
   Calendar,
   ChevronDown,
   Plus,
-  Bell,
   Sparkles,
   TrendingUp,
   TrendingDown,
@@ -24,6 +23,9 @@ import AIMoneyCoach from "@/components/AIMoneyCoach";
 import CategoryChart from "@/components/CategoryChart";
 import TransactionList from "@/components/TransactionList";
 import BudgetsProgress from "@/components/BudgetsProgress";
+import NotificationPopover from "@/components/NotificationPopover";
+import UserAvatarMenu from "@/components/UserAvatarMenu";
+import ThemeToggle from "@/components/ThemeToggle";
 import TransactionModal from "@/components/TransactionModal";
 
 export default function Dashboard() {
@@ -47,11 +49,11 @@ export default function Dashboard() {
       {/* Top Header */}
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl lg:text-[28px] font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             Good morning, {displayName}{" "}
             <span className="inline-block hover:rotate-12 transition-transform cursor-default">👋</span>
           </h1>
-          <p className="text-slate-500 text-sm mt-0.5 font-medium">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">
             Here's your financial overview for {selectedMonth}.
           </p>
         </div>
@@ -62,15 +64,15 @@ export default function Dashboard() {
           <div className="relative">
             <button
               onClick={() => setMonthMenuOpen(!monthMenuOpen)}
-              className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm transition-all"
+              className="flex items-center gap-2 bg-white hover:bg-slate-50 dark:bg-[#082226] dark:hover:bg-[#0c2c31] dark:border-[#103e45] text-slate-700 dark:text-slate-200 text-sm font-semibold px-4 py-2.5 rounded-xl border border-slate-200 shadow-sm transition-all"
             >
-              <Calendar className="w-4 h-4 text-slate-500" />
+              <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span>{selectedMonth}</span>
               <ChevronDown className="w-4 h-4 text-slate-400" />
             </button>
 
             {monthMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-30 py-1 text-sm font-medium animate-fade-in">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#08262a] border border-slate-200 dark:border-[#103e45] rounded-xl shadow-lg z-30 py-1 text-sm font-medium animate-fade-in text-slate-800 dark:text-slate-200">
                 {["September 2026", "August 2026", "July 2026", "June 2026"].map((m) => (
                   <button
                     key={m}
@@ -80,13 +82,13 @@ export default function Dashboard() {
                     }}
                     className={`w-full text-left px-4 py-2 transition-colors flex items-center justify-between ${
                       m === selectedMonth
-                        ? "text-teal-700 bg-teal-50 font-bold"
-                        : "text-slate-700 hover:bg-slate-50"
+                        ? "text-teal-700 bg-teal-50 dark:bg-teal-900/40 dark:text-teal-300 font-bold"
+                        : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-[#0c2f34]"
                     }`}
                   >
                     <span>{m}</span>
                     {m === "September 2026" && (
-                      <span className="text-[10px] text-teal-600 uppercase font-extrabold bg-teal-100/60 px-1.5 py-0.5 rounded">
+                      <span className="text-[10px] text-teal-600 dark:text-teal-400 uppercase font-extrabold bg-teal-100/60 dark:bg-teal-950/80 px-1.5 py-0.5 rounded">
                         Current
                       </span>
                     )}
@@ -105,16 +107,14 @@ export default function Dashboard() {
             <span>Add Transaction</span>
           </button>
 
-          {/* Notification Bell */}
-          <button className="w-10 h-10 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 relative transition-all">
-            <Bell className="w-5 h-5" />
-            <span className="w-2 h-2 rounded-full bg-rose-500 absolute top-2.5 right-2.5 ring-2 ring-white" />
-          </button>
+          {/* Theme Toggle (Dark / Light Mode) */}
+          <ThemeToggle />
 
-          {/* User Avatar Initial */}
-          <div className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 flex items-center justify-center text-slate-800 font-bold text-sm shadow-sm select-none cursor-pointer">
-            J
-          </div>
+          {/* Interactive Notification Bell (Active Red Dot only when active) */}
+          <NotificationPopover />
+
+          {/* Dynamic User Avatar Button & Menu (Replaces hardcoded J) */}
+          <UserAvatarMenu />
         </div>
       </header>
 

@@ -22,23 +22,23 @@ export default function CategoryChart() {
   const totalExpenses = 28599;
 
   return (
-    <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
+    <div className="bg-white dark:bg-[#072428] rounded-3xl p-6 border border-slate-200/80 dark:border-[#0e3b42] shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100">
+            <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-800">
               <PieIcon className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">Spending DNA</h2>
-              <p className="text-xs text-slate-500 font-medium">Where your money goes this month</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">Spending DNA</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Where your money goes this month</p>
             </div>
           </div>
 
           <Link
             to="/transactions"
-            className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 group"
+            className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 flex items-center gap-1 group"
           >
             <span>View Details</span>
             <span className="group-hover:translate-x-0.5 transition-transform">→</span>
@@ -81,10 +81,10 @@ export default function CategoryChart() {
 
             {/* Centered label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-xs font-bold text-slate-900 tracking-tight">
+              <span className="text-xs font-bold text-slate-900 dark:text-white tracking-tight">
                 ₹{totalExpenses.toLocaleString("en-IN")}
               </span>
-              <span className="text-[9px] text-slate-400 font-medium">Total Expenses</span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">Total Expenses</span>
             </div>
           </div>
 
@@ -97,11 +97,11 @@ export default function CategoryChart() {
                     className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="font-medium text-slate-700 truncate">{item.category}</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300 truncate">{item.category}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-400 text-[11px]">{item.percentage}%</span>
-                  <span className="font-bold text-slate-900">
+                  <span className="text-slate-400 dark:text-slate-500 text-[11px]">{item.percentage}%</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
                     ₹{item.amount.toLocaleString("en-IN")}
                   </span>
                 </div>

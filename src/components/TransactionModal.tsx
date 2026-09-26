@@ -79,36 +79,36 @@ export default function TransactionModal({ open, onClose, onSave, editingTransac
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md animate-fade-in max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900">
+      <div className="relative bg-white dark:bg-[#072428] rounded-2xl shadow-xl border border-gray-100 dark:border-[#0e3b42] w-full max-w-md animate-fade-in max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-[#0e3b42]">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
             {editingTransaction ? "Edit Transaction" : "Add Transaction"}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">
+            <div className="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-700 dark:text-red-300 rounded-xl p-3 text-sm">
               {error}
             </div>
           )}
 
           {/* Type toggle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Type</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Type</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => { setType("expense"); setCategory(""); }}
                 className={`rounded-xl py-2.5 text-sm font-medium border transition-all ${
                   type === "expense"
-                    ? "bg-red-50 border-red-300 text-red-700"
-                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                    ? "bg-red-50 dark:bg-red-950/60 border-red-300 dark:border-red-800 text-red-700 dark:text-red-300"
+                    : "bg-white dark:bg-[#082226] border-gray-300 dark:border-[#103e45] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0c2c31]"
                 }`}
               >
                 Expense
@@ -118,8 +118,8 @@ export default function TransactionModal({ open, onClose, onSave, editingTransac
                 onClick={() => { setType("income"); setCategory(""); }}
                 className={`rounded-xl py-2.5 text-sm font-medium border transition-all ${
                   type === "income"
-                    ? "bg-teal-50 border-teal-300 text-teal-700"
-                    : "bg-white border-gray-300 text-gray-500 hover:bg-gray-50"
+                    ? "bg-teal-50 dark:bg-teal-950/60 border-teal-300 dark:border-teal-800 text-teal-700 dark:text-teal-300"
+                    : "bg-white dark:bg-[#082226] border-gray-300 dark:border-[#103e45] text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-[#0c2c31]"
                 }`}
               >
                 Income
@@ -128,7 +128,7 @@ export default function TransactionModal({ open, onClose, onSave, editingTransac
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Description</label>
             <input
               type="text"
               value={description}
@@ -140,7 +140,7 @@ export default function TransactionModal({ open, onClose, onSave, editingTransac
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Amount</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Amount</label>
               <input
                 type="number"
                 step="0.01"
@@ -152,7 +152,7 @@ export default function TransactionModal({ open, onClose, onSave, editingTransac
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Date</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Date</label>
               <input
                 type="date"
                 value={date}
@@ -163,8 +163,8 @@ export default function TransactionModal({ open, onClose, onSave, editingTransac
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Category {type === "expense" && <span className="text-gray-400 font-normal">(optional — AI will categorize)</span>}
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+              Category {type === "expense" && <span className="text-gray-400 dark:text-gray-500 font-normal">(optional — AI will categorize)</span>}
             </label>
             <select
               value={category}

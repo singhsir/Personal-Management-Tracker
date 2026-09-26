@@ -17,9 +17,9 @@ export default function FinancialHealthCard({
   const strokeDashoffset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm relative overflow-hidden flex flex-col justify-between transition-all hover:shadow-md">
+    <div className="bg-white dark:bg-[#072428] rounded-3xl p-6 border border-slate-200/80 dark:border-[#0e3b42] shadow-sm relative overflow-hidden flex flex-col justify-between transition-all hover:shadow-md">
       {/* Botanical Foliage Watermark */}
-      <div className="absolute -right-4 -bottom-6 w-48 h-48 opacity-25 pointer-events-none text-emerald-600">
+      <div className="absolute -right-4 -bottom-6 w-48 h-48 opacity-25 dark:opacity-10 pointer-events-none text-emerald-600 dark:text-emerald-400">
         <svg viewBox="0 0 200 200" fill="currentColor">
           <path d="M120 20 C100 60 70 80 40 100 C70 110 110 100 130 80 C150 60 140 30 120 20 Z" opacity="0.8" />
           <path d="M140 70 C125 105 95 125 65 140 C95 150 135 140 150 120 C165 100 155 80 140 70 Z" opacity="0.9" />
@@ -31,12 +31,12 @@ export default function FinancialHealthCard({
       <div>
         {/* Card Header */}
         <div className="flex items-center gap-2.5 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100">
-            <Heart className="w-4 h-4 fill-teal-600 text-teal-600" />
+          <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-teal-800">
+            <Heart className="w-4 h-4 fill-teal-600 dark:fill-teal-400 text-teal-600 dark:text-teal-400" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 leading-tight">Financial Health</h2>
-            <p className="text-xs text-slate-500 font-medium">A snapshot of your financial well-being</p>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">Financial Health</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">A snapshot of your financial well-being</p>
           </div>
         </div>
 
@@ -50,7 +50,7 @@ export default function FinancialHealthCard({
                   cx="50"
                   cy="50"
                   r={radius}
-                  stroke="#e2ecea"
+                  className="stroke-[#e2ecea] dark:stroke-[#0e3b42]"
                   strokeWidth="8"
                   fill="transparent"
                 />
@@ -73,34 +73,34 @@ export default function FinancialHealthCard({
                 </defs>
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-3xl font-extrabold text-slate-800 tracking-tight">{score}</span>
-                <span className="text-xs font-semibold text-slate-400 -mt-1">/100</span>
+                <span className="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">{score}</span>
+                <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 -mt-1">/100</span>
               </div>
             </div>
 
             {/* Points vs last month */}
-            <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-              <TrendingUp className="w-3 h-3 text-emerald-600" />
+            <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+              <TrendingUp className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
               <span>+{pointsDelta} points</span>
-              <span className="font-normal text-slate-400 text-[10px]">vs last month</span>
+              <span className="font-normal text-slate-400 dark:text-slate-500 text-[10px]">vs last month</span>
             </div>
           </div>
 
           {/* Copy & AI Highlight Banner */}
           <div className="flex-1 text-left">
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               You're on the right track! <span className="text-base">🎉</span>
             </h3>
-            <p className="text-slate-600 text-xs sm:text-[13px] leading-relaxed mt-1 font-normal">
+            <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-[13px] leading-relaxed mt-1 font-normal">
               Your income is higher than expenses and you're maintaining a healthy savings rate of{" "}
-              <span className="font-semibold text-slate-900">{savingsRate}%</span> this month.
+              <span className="font-semibold text-slate-900 dark:text-white">{savingsRate}%</span> this month.
             </p>
 
-            <div className="mt-4 p-3 rounded-2xl bg-[#eff9f7] border border-teal-100 flex items-start gap-2.5">
-              <div className="text-teal-600 mt-0.5 flex-shrink-0">
-                <Sparkles className="w-4 h-4 fill-teal-600" />
+            <div className="mt-4 p-3 rounded-2xl bg-[#eff9f7] dark:bg-[#093439] border border-teal-100 dark:border-[#104b53] flex items-start gap-2.5">
+              <div className="text-teal-600 dark:text-teal-400 mt-0.5 flex-shrink-0">
+                <Sparkles className="w-4 h-4 fill-teal-600 dark:fill-teal-400" />
               </div>
-              <p className="text-xs font-medium text-teal-900 leading-snug">
+              <p className="text-xs font-medium text-teal-900 dark:text-teal-200 leading-snug">
                 Consistent savings and controlled spending show strong financial habits.
               </p>
             </div>

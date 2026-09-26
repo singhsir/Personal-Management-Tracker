@@ -8,9 +8,12 @@ import {
   Settings,
   LogOut,
   X,
-  DollarSign
+  DollarSign,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 interface SidebarProps {
   open: boolean;
@@ -28,6 +31,7 @@ const navItems = [
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { signOut } = useAuthContext();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -137,6 +141,24 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <span className="w-1 h-2 bg-teal-400/60 rounded-full animate-bounce [animation-delay:0.4s]" />
             </div>
           </div>
+
+          {/* Theme Switcher Button */}
+          <button
+            onClick={toggleTheme}
+            className="w-full flex items-center justify-between px-3 py-2 text-sm text-teal-200/70 hover:text-white hover:bg-[#073c3f] rounded-xl transition-all"
+          >
+            <div className="flex items-center gap-3">
+              {isDark ? (
+                <Sun className="w-5 h-5 text-amber-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-teal-300/60" />
+              )}
+              <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-wider bg-teal-900/60 text-teal-300 border border-teal-700/60 px-2 py-0.5 rounded-full">
+              {isDark ? "Dark" : "Light"}
+            </span>
+          </button>
 
           {/* Logout */}
           <button

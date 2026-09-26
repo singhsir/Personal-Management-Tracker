@@ -14,11 +14,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  .dark body {
+    background-color: #04171a;
+    color: #f1f5f9;
+  }
 }
 
 @layer components {
   .card {
-    @apply bg-white rounded-2xl border border-gray-200 shadow-sm;
+    @apply bg-white dark:bg-[#072428] rounded-2xl border border-gray-200 dark:border-[#0e3b42] shadow-sm;
   }
 
   .btn-primary {
@@ -26,15 +31,15 @@
   }
 
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-gray-700 font-medium rounded-xl px-4 py-2.5 border border-gray-300 transition-colors duration-200;
+    @apply bg-white dark:bg-[#082226] hover:bg-gray-50 dark:hover:bg-[#0c2c31] text-gray-700 dark:text-gray-200 font-medium rounded-xl px-4 py-2.5 border border-gray-300 dark:border-[#103e45] transition-colors duration-200;
   }
 
   .btn-ghost {
-    @apply text-gray-600 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors duration-200;
+    @apply text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#0c2c31] rounded-lg px-3 py-2 transition-colors duration-200;
   }
 
   .input-field {
-    @apply w-full rounded-xl border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all duration-200;
+    @apply w-full rounded-xl border border-gray-300 dark:border-[#13434b] px-4 py-2.5 text-gray-900 dark:text-white bg-white dark:bg-[#082226] placeholder-gray-400 dark:placeholder-gray-500 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all duration-200;
   }
 }
 
@@ -52,6 +57,13 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #9ca3af;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #0f3d44;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #17545e;
 }
 
 /* Fade-in animation */

@@ -88,24 +88,24 @@ export default function TransactionList({
       })
     : DEFAULT_RECENT;
   return (
-    <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
+    <div className="bg-white dark:bg-[#072428] rounded-3xl p-6 border border-slate-200/80 dark:border-[#0e3b42] shadow-sm flex flex-col justify-between transition-all hover:shadow-md h-full">
       <div>
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-800">
               <Clock className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">Recent Activity</h2>
-              <p className="text-xs text-slate-500 font-medium">Your latest transactions</p>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">Recent Activity</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Your latest transactions</p>
             </div>
           </div>
 
           {showViewAll && (
             <Link
               to="/transactions"
-              className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 group"
+              className="text-xs font-bold text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 flex items-center gap-1 group"
             >
               <span>View All</span>
               <span className="group-hover:translate-x-0.5 transition-transform">→</span>
@@ -120,25 +120,25 @@ export default function TransactionList({
             return (
               <div key={tx.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl ${tx.iconBg} ${tx.iconColor} flex items-center justify-center flex-shrink-0`}>
+                  <div className={`w-9 h-9 rounded-xl ${tx.iconBg} dark:bg-teal-950/60 ${tx.iconColor} flex items-center justify-center flex-shrink-0`}>
                     <Icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-bold text-slate-900">{tx.title}</h4>
-                    <p className="text-[11px] text-slate-500">{tx.sub}</p>
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white">{tx.title}</h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">{tx.sub}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`text-xs font-bold ${tx.isIncome ? "text-emerald-600" : "text-rose-600"}`}>
+                  <div className={`text-xs font-bold ${tx.isIncome ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
                     {tx.amount}
                   </div>
                   <div className="flex items-center gap-1 justify-end mt-0.5">
-                    <span className="text-[10px] text-slate-400">{tx.date}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500">{tx.date}</span>
                     <span
                       className={`text-[9px] font-bold px-1.5 py-0.2 rounded border ${
                         tx.badgeType === "income"
-                          ? "text-emerald-700 bg-emerald-50 border-emerald-200/60"
-                          : "text-teal-700 bg-teal-50 border-teal-200/60"
+                          ? "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200/60 dark:border-emerald-800/60"
+                          : "text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/60 border-teal-200/60 dark:border-teal-800/60"
                       }`}
                     >
                       {tx.badge}

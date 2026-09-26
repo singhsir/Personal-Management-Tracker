@@ -42,21 +42,21 @@ export default function SpendingChart({
   };
 
   return (
-    <div className="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+    <div className="bg-white dark:bg-[#072428] rounded-3xl p-6 border border-slate-200/80 dark:border-[#0e3b42] shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-100">
+          <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-600 dark:text-teal-400 flex items-center justify-center border border-teal-100 dark:border-teal-800">
             <BarChart3 className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-900 leading-tight">Money Pulse</h2>
-            <p className="text-xs text-slate-500 font-medium">Income, expenses and savings trend</p>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white leading-tight">Money Pulse</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Income, expenses and savings trend</p>
           </div>
         </div>
 
         {/* Time Selector */}
-        <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200 transition-all">
+        <button className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-[#093238] hover:bg-slate-100 dark:hover:bg-[#0d3f47] px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#104851] transition-all">
           <span>Last 6 months</span>
           <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
         </button>
@@ -70,7 +70,7 @@ export default function SpendingChart({
             margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
             barGap={4}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" className="stroke-slate-100 dark:stroke-[#0e3b42]" vertical={false} />
             <XAxis
               dataKey="label"
               tick={{ fontSize: 11, fill: "#64748b", fontWeight: 600 }}
@@ -109,7 +109,7 @@ export default function SpendingChart({
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-slate-100 text-xs font-semibold text-slate-600">
+      <div className="flex items-center justify-center gap-6 mt-4 pt-3 border-t border-slate-100 dark:border-[#0e3b42] text-xs font-semibold text-slate-600 dark:text-slate-400">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#0d9488]" />
           <span>Income</span>

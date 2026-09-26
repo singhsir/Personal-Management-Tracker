@@ -24,7 +24,7 @@ export default function AppLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f1f7f7] flex">
+    <div className="min-h-screen bg-[#f1f7f7] dark:bg-[#04171a] flex transition-colors duration-200">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setSidebarOpen(true)} />

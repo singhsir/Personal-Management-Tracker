@@ -1,5 +1,6 @@
-import { Menu } from "lucide-react";
+import { Menu, Bot } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
+import { useAICompanion } from "@/context/AICompanionContext";
 import ThemeToggle from "./ThemeToggle";
 import NotificationPopover from "./NotificationPopover";
 
@@ -9,6 +10,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const { user, profile } = useAuthContext();
+  const { openAICompanion } = useAICompanion();
 
   const fullName =
     profile?.full_name?.trim() ||
@@ -31,6 +33,17 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <span className="font-bold text-slate-900 dark:text-white text-sm">FinWise AI</span>
 
         <div className="flex items-center gap-2">
+          {/* AI Money Agent button */}
+          <button
+            onClick={openAICompanion}
+            title="Ask AI Money Agent"
+            aria-label="Ask AI Money Agent"
+            className="w-8 h-8 rounded-lg bg-teal-50 hover:bg-teal-100 dark:bg-[#082226] dark:hover:bg-[#0c2c31] border border-teal-200 dark:border-[#103e45] text-teal-600 dark:text-teal-300 flex items-center justify-center relative shadow-xs"
+          >
+            <Bot className="w-4 h-4" />
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          </button>
+
           <ThemeToggle className="w-8 h-8 rounded-lg" />
           <NotificationPopover />
 

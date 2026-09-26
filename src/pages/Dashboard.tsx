@@ -4,6 +4,7 @@ import {
   ChevronDown,
   Plus,
   Sparkles,
+  Bot,
   TrendingUp,
   TrendingDown,
   Wallet,
@@ -11,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuthContext } from "@/context/AuthContext";
+import { useAICompanion } from "@/context/AICompanionContext";
 import { useTransactions } from "@/hooks/useTransactions";
 import type { NewTransaction } from "@/lib/types";
 
@@ -27,15 +29,14 @@ import NotificationPopover from "@/components/NotificationPopover";
 import UserAvatarMenu from "@/components/UserAvatarMenu";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransactionModal from "@/components/TransactionModal";
-import AIMoneyCompanionDrawer from "@/components/AIMoneyCompanionDrawer";
 
 export default function Dashboard() {
   const { profile, user } = useAuthContext();
   const { transactions, addTransaction } = useTransactions();
+  const { openAICompanion } = useAICompanion();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("September 2026");
   const [monthMenuOpen, setMonthMenuOpen] = useState(false);
-  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
 
   const displayName =
     profile?.full_name?.trim() ||
@@ -110,6 +111,17 @@ export default function Dashboard() {
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>Add Transaction</span>
+          </button>
+
+          {/* AI Money Agent Assistant Button */}
+          <button
+            onClick={openAICompanion}
+            title="Ask AI Money Agent"
+            aria-label="Ask AI Money Agent"
+            className="w-10 h-10 rounded-xl flex items-center justify-center relative transition-all shadow-sm bg-white hover:bg-slate-50 border border-slate-200 text-teal-600 hover:text-teal-700 dark:bg-[#082226] dark:border-[#0f383e] dark:text-teal-300 dark:hover:bg-[#0c2c31] group"
+          >
+            <Bot className="w-5 h-5 transition-transform group-hover:scale-110" />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           </button>
 
           {/* Theme Toggle (Dark / Light Mode) */}
@@ -189,21 +201,6 @@ export default function Dashboard() {
         <TransactionList transactions={transactions} currency={currency} />
         <BudgetsProgress />
       </div>
-
-      {/* Floating Action Button (FAB) for AI Assistant */}
-      <button
-        onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-[#00695c] hover:bg-[#004d40] text-teal-200 shadow-2xl flex items-center justify-center transition-all hover:scale-105 active:scale-95 z-40 border-2 border-teal-300/40"
-        title="AI Assistant Insights"
-      >
-        <Sparkles className="w-6 h-6 text-white animate-pulse" />
-      </button>
-
-      {/* AI Assistant Quick Drawer */}
-      <AIMoneyCompanionDrawer
-        open={aiDrawerOpen}
-        onClose={() => setAiDrawerOpen(false)}
-      />
 
       {/* Transaction Modal */}
       <TransactionModal

@@ -144,7 +144,7 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
         <div className="p-4 bg-slate-50 dark:bg-[#061d21] border-b border-slate-100 dark:border-[#0e3b42] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs">
-              <Sparkles className="w-4 h-4" />
+              <Bot className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-1.5">

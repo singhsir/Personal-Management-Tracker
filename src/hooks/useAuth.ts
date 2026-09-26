@@ -3,27 +3,7 @@ import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import type { Profile } from "@/lib/types";
 
-export const DEMO_USER: User = {
-  id: "demo-jaggan-2026",
-  app_metadata: { provider: "email" },
-  user_metadata: { full_name: "Jaggan" },
-  aud: "authenticated",
-  created_at: "2026-09-01T00:00:00Z",
-  email: "jaggan@finwise.ai",
-  phone: "",
-  role: "authenticated",
-  updated_at: "2026-09-25T00:00:00Z",
-};
-
-export const DEMO_PROFILE: Profile = {
-  id: "demo-jaggan-2026",
-  full_name: "Jaggan",
-  currency: "INR",
-  created_at: "2026-09-01T00:00:00Z",
-};
-
 const ACTIVE_USER_KEY = "finwise_active_user";
-const DEMO_SESSION_KEY = "finwise_demo_session";
 const RESET_PREFIX = "finwise_reset_";
 const PWD_PREFIX = "finwise_pwd_";
 
@@ -76,7 +56,10 @@ export function useAuth() {
             setUser(parsed);
             setProfile({
               id: parsed.id,
-              full_name: (parsed.user_metadata?.full_name as string) || parsed.email?.split("@")[0] || "User",
+              full_name:
+                (parsed.user_metadata?.full_name as string) ||
+                parsed.email?.split("@")[0] ||
+                "User",
               currency: "INR",
               created_at: parsed.created_at || new Date().toISOString(),
             });
@@ -85,14 +68,6 @@ export function useAuth() {
           } catch {
             localStorage.removeItem(ACTIVE_USER_KEY);
           }
-        }
-
-        // Check if demo mode was explicitly activated
-        if (localStorage.getItem(DEMO_SESSION_KEY) === "true") {
-          setUser(DEMO_USER);
-          setProfile(DEMO_PROFILE);
-          setLoading(false);
-          return;
         }
 
         // Unauthenticated
@@ -126,9 +101,6 @@ export function useAuth() {
             setUser(null);
             setProfile(null);
           }
-        } else if (localStorage.getItem(DEMO_SESSION_KEY) === "true") {
-          setUser(DEMO_USER);
-          setProfile(DEMO_PROFILE);
         } else {
           setUser(null);
           setProfile(null);
@@ -171,7 +143,6 @@ export function useAuth() {
             updated_at: new Date().toISOString(),
           };
           localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(customUser));
-          localStorage.removeItem(DEMO_SESSION_KEY);
           setUser(customUser);
           setProfile({
             id: customUser.id,
@@ -184,7 +155,6 @@ export function useAuth() {
         throw error;
       }
 
-      localStorage.removeItem(DEMO_SESSION_KEY);
       localStorage.removeItem(ACTIVE_USER_KEY);
       return data;
     } catch (err) {
@@ -201,7 +171,6 @@ export function useAuth() {
           updated_at: new Date().toISOString(),
         };
         localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(customUser));
-        localStorage.removeItem(DEMO_SESSION_KEY);
         setUser(customUser);
         setProfile({
           id: customUser.id,
@@ -229,8 +198,6 @@ export function useAuth() {
 
     if (error) throw error;
 
-    // In case Supabase has email confirmation enabled in cloud settings,
-    // ensure user can still access immediately without any verification step
     if (data.user && data.session) {
       try {
         await supabase.from("profiles").upsert({
@@ -241,7 +208,6 @@ export function useAuth() {
       } catch (err) {
         console.warn("Could not upsert profile on signup:", err);
       }
-      localStorage.removeItem(DEMO_SESSION_KEY);
       return data;
     }
 
@@ -252,7 +218,6 @@ export function useAuth() {
         password,
       });
       if (signInRes.data?.session) {
-        localStorage.removeItem(DEMO_SESSION_KEY);
         return signInRes.data;
       }
     } catch {
@@ -273,7 +238,6 @@ export function useAuth() {
     };
 
     localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(activeUser));
-    localStorage.removeItem(DEMO_SESSION_KEY);
     setUser(activeUser);
     const newProf: Profile = {
       id: activeUser.id,
@@ -283,7 +247,6 @@ export function useAuth() {
     };
     setProfile(newProf);
 
-    // Also persist profile to Supabase if possible
     try {
       await supabase.from("profiles").upsert(newProf);
     } catch (err) {
@@ -293,14 +256,13 @@ export function useAuth() {
     return { user: activeUser, session: null };
   };
 
-  // Google account login (direct OAuth or Google profile sign-in)
+  // Google account login (direct Google profile sign-in)
   const signInWithGoogle = async (googleProfile?: {
     email: string;
     name: string;
     avatarUrl?: string;
   }) => {
     if (googleProfile) {
-      // Direct Google profile authentication
       const normEmail = googleProfile.email.trim().toLowerCase();
       const gUser: User = {
         id: "google-" + btoa(normEmail).replace(/=/g, "").toLowerCase(),
@@ -322,7 +284,6 @@ export function useAuth() {
       };
 
       localStorage.setItem(ACTIVE_USER_KEY, JSON.stringify(gUser));
-      localStorage.removeItem(DEMO_SESSION_KEY);
       setUser(gUser);
       const prof: Profile = {
         id: gUser.id,
@@ -354,14 +315,6 @@ export function useAuth() {
     }
 
     return data;
-  };
-
-  // Demo user login for testing
-  const signInWithDemo = () => {
-    localStorage.setItem(DEMO_SESSION_KEY, "true");
-    localStorage.removeItem(ACTIVE_USER_KEY);
-    setUser(DEMO_USER);
-    setProfile(DEMO_PROFILE);
   };
 
   // Send 6-digit verification code to email for forgot password reset
@@ -461,16 +414,29 @@ export function useAuth() {
     return { success: true };
   };
 
+  // 100% Reliable SignOut: immediately clears React state, localStorage tokens, and Supabase session
   const signOut = async () => {
-    localStorage.removeItem(ACTIVE_USER_KEY);
-    localStorage.removeItem(DEMO_SESSION_KEY);
-    try {
-      await supabase.auth.signOut();
-    } catch {
-      // Ignore
-    }
     setUser(null);
     setProfile(null);
+
+    // Clear custom user keys
+    localStorage.removeItem(ACTIVE_USER_KEY);
+    localStorage.removeItem("finwise_demo_session");
+    localStorage.removeItem("finwise_demo_data_cleared");
+
+    // Clear all Supabase auth tokens from localStorage
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith("sb-") || k.includes("supabase.auth"))) {
+        localStorage.removeItem(k);
+      }
+    }
+
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch (err) {
+      console.warn("Supabase local signout notice:", err);
+    }
   };
 
   const updateProfile = async (updates: { full_name?: string; currency?: string }) => {
@@ -515,7 +481,6 @@ export function useAuth() {
     signUp,
     signIn,
     signInWithGoogle,
-    signInWithDemo,
     sendPasswordResetCode,
     verifyResetCode,
     resetPasswordWithCode,

@@ -29,14 +29,18 @@ import ThemeToggle from "@/components/ThemeToggle";
 import TransactionModal from "@/components/TransactionModal";
 
 export default function Dashboard() {
-  const { profile } = useAuthContext();
-  const { transactions, hasDemoData, addTransaction } = useTransactions();
+  const { profile, user } = useAuthContext();
+  const { transactions, addTransaction } = useTransactions();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("September 2026");
   const [monthMenuOpen, setMonthMenuOpen] = useState(false);
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
 
-  const displayName = profile?.full_name || "Jaggan";
+  const displayName =
+    profile?.full_name?.trim() ||
+    (user?.user_metadata?.full_name as string)?.trim() ||
+    user?.email?.split("@")[0] ||
+    "User";
   const currency = profile?.currency || "INR";
   const summary = calculateSummary(transactions);
 
@@ -118,24 +122,6 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Demo Banner */}
-      {hasDemoData && (
-        <div className="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs shadow-2xs">
-          <div className="flex items-center gap-2.5 text-amber-900 font-medium">
-            <Sparkles className="w-4 h-4 text-amber-600 flex-shrink-0" />
-            <span>
-              <strong>Sample Demo Data Active:</strong> Displaying pre-loaded records. You can delete all demo data at once using the checkbox option in Transactions.
-            </span>
-          </div>
-          <Link
-            to="/transactions"
-            className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl whitespace-nowrap transition-colors"
-          >
-            Manage Demo Data →
-          </Link>
-        </div>
-      )}
-
       {/* Row 1: Financial Health (7 cols) + 2x2 Stat Cards (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7">
@@ -189,7 +175,7 @@ export default function Dashboard() {
       {/* Row 2: Money Pulse (7 cols) + AI Money Coach (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7">
-          <SpendingChart currency={currency} />
+          <SpendingChart transactions={transactions} currency={currency} />
         </div>
         <div className="lg:col-span-5">
           <AIMoneyCoach />
@@ -198,7 +184,7 @@ export default function Dashboard() {
 
       {/* Row 3: Spending DNA + Recent Activity + Budgets (3 equal columns) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <CategoryChart />
+        <CategoryChart transactions={transactions} />
         <TransactionList transactions={transactions} currency={currency} />
         <BudgetsProgress />
       </div>
@@ -214,30 +200,36 @@ export default function Dashboard() {
 
       {/* AI Assistant Quick Drawer */}
       {aiDrawerOpen && (
-        <div className="fixed bottom-24 right-6 w-80 bg-white rounded-3xl shadow-2xl border border-slate-200 p-5 z-50 animate-fade-in">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+        <div className="fixed bottom-24 right-6 w-80 bg-white dark:bg-[#072428] rounded-3xl shadow-2xl border border-slate-200 dark:border-[#0e3b42] p-5 z-50 animate-fade-in">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#0e3b42] mb-3">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h4 className="text-sm font-bold text-slate-900">FinWise AI Assistant</h4>
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">FinWise AI Assistant</h4>
             </div>
             <button
               onClick={() => setAiDrawerOpen(false)}
-              className="text-slate-400 hover:text-slate-600 text-sm"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Hello <b>Jaggan</b>! Based on your September 2026 data:
+          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+            Hello <b>{displayName}</b>! Based on your {selectedMonth} activity:
           </p>
-          <div className="mt-3 space-y-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-teal-50 border border-teal-100 text-teal-900">
-              💡 You have saved <b>₹56,401</b> this month. Keep it invested in liquid or index funds.
+          {summary.totalExpenses > 0 ? (
+            <div className="mt-3 space-y-2 text-xs">
+              <div className="p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/50 text-teal-900 dark:text-teal-200">
+                💡 You have saved <b>{formatCurrency(summary.savings, currency)}</b> this month. Keep up the balanced budget!
+              </div>
+              <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 text-rose-900 dark:text-rose-200">
+                📊 Total spending: <b>{formatCurrency(summary.totalExpenses, currency)}</b> across your active categories.
+              </div>
             </div>
-            <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-900">
-              🍔 Dining out took ₹10,250. Reducing weekend dine-outs could add ₹3,000 to net savings.
+          ) : (
+            <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-[#093238] border border-slate-100 dark:border-[#0e434c] text-slate-600 dark:text-slate-300 text-xs">
+              No expenses recorded for this period yet. Click <b>Add Transaction</b> to start tracking your finances!
             </div>
-          </div>
+          )}
         </div>
       )}
 

@@ -45,7 +45,7 @@ export default function UserAvatarMenu() {
     } catch {
       // ignore
     }
-    navigate("/login");
+    window.location.href = "/login";
   };
 
   return (

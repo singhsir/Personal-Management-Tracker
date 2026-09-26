@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ArrowRight, ShieldCheck, User } from "lucide-react";
+import { X, ArrowRight, ShieldCheck, Mail, User } from "lucide-react";
 
 interface GoogleAuthModalProps {
   isOpen: boolean;
@@ -14,44 +14,31 @@ export default function GoogleAuthModal({
   onSelectGoogleAccount,
   defaultEmail = "",
 }: GoogleAuthModalProps) {
-  const [useCustom, setUseCustom] = useState(false);
-  const [customName, setCustomName] = useState("");
-  const [customEmail, setCustomEmail] = useState(defaultEmail || "");
-  const [customError, setCustomError] = useState("");
+  const [googleName, setGoogleName] = useState("");
+  const [googleEmail, setGoogleEmail] = useState(defaultEmail || "");
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
-  const quickAccounts = [
-    {
-      name: "Jaggan",
-      email: "jaggan@finwise.ai",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=face",
-    },
-    {
-      name: "Jagannath",
-      email: "jagannath.finance@gmail.com",
-      avatar: "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&h=100&fit=crop&crop=face",
-    },
-  ];
-
-  const handleCustomSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customEmail.trim() || !customEmail.includes("@")) {
-      setCustomError("Please enter a valid Google email address.");
+    const cleanEmail = googleEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes("@")) {
+      setError("Please enter a valid Google email address.");
       return;
     }
-    const name = customName.trim() || customEmail.split("@")[0];
+    const cleanName = googleName.trim() || cleanEmail.split("@")[0];
     onSelectGoogleAccount({
-      name,
-      email: customEmail.trim(),
+      name: cleanName,
+      email: cleanEmail,
     });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md overflow-hidden transform transition-all">
+      <div className="bg-white dark:bg-[#072428] rounded-3xl shadow-2xl border border-gray-100 dark:border-[#0e3b42] w-full max-w-md overflow-hidden transform transition-all">
         {/* Header */}
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+        <div className="p-6 border-b border-gray-100 dark:border-[#0e3b42] flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Google Icon */}
             <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -73,13 +60,13 @@ export default function GoogleAuthModal({
               />
             </svg>
             <div>
-              <h3 className="font-semibold text-gray-900 text-base">Sign in with Google</h3>
-              <p className="text-xs text-gray-500">Choose an account to continue to FinWise AI</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white text-base">Sign in with Google</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400">Continue directly with your Google account</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#0c3137] transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -87,100 +74,61 @@ export default function GoogleAuthModal({
 
         {/* Content */}
         <div className="p-6">
-          {!useCustom ? (
-            <div className="space-y-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">
-                Available Google Accounts
-              </p>
-              {quickAccounts.map((acc) => (
-                <button
-                  key={acc.email}
-                  onClick={() => onSelectGoogleAccount(acc)}
-                  className="w-full flex items-center justify-between p-3.5 rounded-xl border border-gray-200 hover:border-teal-500 hover:bg-teal-50/40 transition-all text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={acc.avatar}
-                      alt={acc.name}
-                      className="w-10 h-10 rounded-full border border-gray-200 object-cover"
-                    />
-                    <div>
-                      <div className="font-medium text-gray-900 group-hover:text-teal-900">
-                        {acc.name}
-                      </div>
-                      <div className="text-xs text-gray-500">{acc.email}</div>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-teal-600 transform group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              ))}
-
-              <div className="pt-2">
-                <button
-                  onClick={() => setUseCustom(true)}
-                  className="w-full py-2.5 px-4 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors flex items-center justify-center gap-2 border border-dashed border-gray-300"
-                >
-                  <User className="w-3.5 h-3.5" />
-                  Use another Google account
-                </button>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleCustomSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Google Account Name
-                </label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                Google Account Name
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   placeholder="e.g. John Doe"
-                  value={customName}
-                  onChange={(e) => setCustomName(e.target.value)}
-                  className="input-field text-sm"
+                  value={googleName}
+                  onChange={(e) => setGoogleName(e.target.value)}
+                  className="input-field pl-9 text-sm"
                 />
               </div>
+            </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Google Email Address
-                </label>
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1">
+                Google Email Address
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
-                  placeholder="name@gmail.com"
-                  value={customEmail}
+                  placeholder="you@gmail.com"
+                  value={googleEmail}
                   onChange={(e) => {
-                    setCustomEmail(e.target.value);
-                    setCustomError("");
+                    setGoogleEmail(e.target.value);
+                    setError("");
                   }}
                   required
-                  className="input-field text-sm"
+                  className="input-field pl-9 text-sm"
                 />
               </div>
+            </div>
 
-              {customError && (
-                <p className="text-xs text-red-600">{customError}</p>
-              )}
+            {error && (
+              <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+            )}
 
-              <div className="flex items-center gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setUseCustom(false)}
-                  className="flex-1 py-2 text-xs font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 btn-primary py-2 text-xs flex items-center justify-center gap-1.5"
-                >
-                  Continue with Google
-                </button>
-              </div>
-            </form>
-          )}
+            <div className="pt-2">
+              <button
+                type="submit"
+                id="google-continue-button"
+                className="w-full btn-primary py-2.5 text-xs font-bold flex items-center justify-center gap-2"
+              >
+                <span>Continue to Dashboard</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          </form>
 
           {/* Security guarantee */}
-          <div className="mt-5 pt-4 border-t border-gray-100 flex items-center justify-center gap-1.5 text-[11px] text-gray-400">
+          <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#0e3b42] flex items-center justify-center gap-1.5 text-[11px] text-gray-500 dark:text-slate-400">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
             <span>Instant sign-in • No separate verification required</span>
           </div>

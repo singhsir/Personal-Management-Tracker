@@ -1,10 +1,9 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   Home,
   Receipt,
   Sparkles,
   PieChart,
-  Target,
   Settings,
   LogOut,
   X,
@@ -25,14 +24,12 @@ const navItems = [
   { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/insights", label: "AI Insights", icon: Sparkles },
   { to: "/budgets", label: "Budgets", icon: PieChart },
-  { to: "/goals", label: "Goals", icon: Target },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { signOut } = useAuthContext();
   const { isDark, toggleTheme } = useTheme();
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -40,7 +37,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     } catch {
       // ignore
     }
-    navigate("/login");
+    window.location.href = "/login";
   };
 
   return (

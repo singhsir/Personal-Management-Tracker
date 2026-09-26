@@ -7,7 +7,7 @@ import ThemeToggle from "@/components/ThemeToggle";
 
 export default function Signup() {
   const navigate = useNavigate();
-  const { signUp, signInWithGoogle, signInWithDemo } = useAuthContext();
+  const { signUp, signInWithGoogle } = useAuthContext();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -266,21 +266,6 @@ export default function Signup() {
               {!loading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
-
-          {/* Quick Demo Option */}
-          <div className="mt-4 pt-4 border-t border-gray-200/60 dark:border-[#0e3b42]">
-            <button
-              type="button"
-              onClick={() => {
-                signInWithDemo();
-                navigate("/dashboard");
-              }}
-              className="w-full py-2 px-3 text-xs font-medium text-teal-700 dark:text-teal-300 bg-teal-50/60 dark:bg-teal-950/40 hover:bg-teal-100/60 dark:hover:bg-teal-900/40 border border-teal-200/50 dark:border-teal-800/50 rounded-xl transition-colors flex items-center justify-center gap-1.5"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
-              Try Demo Account (Jaggan)
-            </button>
-          </div>
 
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             Already have an account?{" "}

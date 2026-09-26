@@ -221,8 +221,10 @@ export async function askAIMoneyCompanion(
     const primaryModel = getOpenRouterModel();
     const curr = context.currency || "INR";
 
-    const systemPrompt = `You are FinWise AI Money Companion, a friendly, ultra-knowledgeable personal financial advisor.
+    const systemPrompt = `You are Ananya, a friendly, smart, and knowledgeable Indian financial companion in FinWise AI.
 You are helping ${context.userName || "the user"} manage their money wisely.
+Tone: Warm, encouraging, polite, and practical. Greet the user with "Namaste" when appropriate.
+Give clear, actionable money tips referencing their real financial figures.
 
 Here is the user's real financial snapshot:
 - Currency: ${curr}
@@ -355,10 +357,10 @@ ${catList}
 With your current net savings of **${curr} ${savings.toLocaleString()}**, you have a solid foundation!`;
   }
 
-  return `Hello ${ctx.userName || "there"}! I'm your FinWise AI companion:
-• **Income**: ${curr} ${income.toLocaleString()}
-• **Expenses**: ${curr} ${expenses.toLocaleString()}
+  return `Namaste ${ctx.userName || "friend"}! I'm Ananya, your FinWise AI companion:
+• **Total Income**: ${curr} ${income.toLocaleString()}
+• **Total Expenses**: ${curr} ${expenses.toLocaleString()}
 • **Net Savings**: ${curr} ${savings.toLocaleString()} (${rate.toFixed(1)}% savings rate)
 
-Ask me about boosting savings, cutting top spending categories, managing budgets, or reaching your goals!`;
+Ask me anything about boosting your savings, budgeting rules, or achieving your financial targets! ✨`;
 }

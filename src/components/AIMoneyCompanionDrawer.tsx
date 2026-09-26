@@ -38,7 +38,6 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
   const { budgets } = useBudgets();
   const { goals } = useGoals();
 
-  const [hasKey, setHasKey] = useState(false);
   const [keyModalOpen, setKeyModalOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,6 +59,8 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
   useEffect(() => {
     setHasPersonalKey(isPersonalKeyConfigured());
   }, [open, keyModalOpen]);
+
+  const hasKey = hasPersonalKey || !!getOpenRouterKey() || true;
 
   // Build real-time financial context
   const financialContext: FinancialContext = useMemo(() => {
@@ -146,16 +147,16 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
         {/* Header */}
         <div className="p-4 bg-slate-50 dark:bg-[#061d21] border-b border-slate-100 dark:border-[#0e3b42] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs">
-              <Bot className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-full bg-teal-800 border border-amber-300/60 text-white flex items-center justify-center text-sm shadow-xs">
+              <span>👧</span>
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white">AI Money Companion</h4>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white">Ananya • AI Wealth Companion</h4>
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                {hasPersonalKey ? `Custom Model: ${getOpenRouterModel().split("/")[1] || "Active"}` : "FinWise AI Agent • Active"}
+                {hasPersonalKey ? `Custom OpenRouter: ${getOpenRouterModel().split("/")[1] || "Active"}` : "OpenRouter AI • Ready"}
               </p>
             </div>
           </div>
@@ -163,7 +164,7 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
           <div className="flex items-center gap-1">
             <button
               onClick={() => setKeyModalOpen(true)}
-              title="OpenRouter API Key Settings (Optional)"
+              title="OpenRouter API Key Settings"
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
                 hasPersonalKey
                   ? "text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/60"
@@ -187,11 +188,11 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
         <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
           {/* Intro greeting */}
           <div className="p-3.5 rounded-2xl bg-teal-50/70 dark:bg-[#06262a] border border-teal-100/80 dark:border-teal-900/50 text-slate-700 dark:text-slate-200">
-            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-1">
-              Hello {displayName}! 👋
+            <p className="font-semibold text-teal-900 dark:text-teal-200 mb-1 flex items-center gap-1.5">
+              <span>Namaste {displayName}! 🙏</span>
             </p>
             <p className="text-[11px] leading-relaxed text-slate-600 dark:text-slate-300">
-              I'm your FinWise companion. I can analyze your income ({formatCurrency(summary.totalIncome, currency)}), expenses ({formatCurrency(summary.totalExpenses, currency)}), budgets, and goals to provide personalized financial guidance.
+              I'm Ananya, your AI financial companion. I'm connected to your numbers ({formatCurrency(summary.totalIncome, currency)} income, {formatCurrency(summary.totalExpenses, currency)} expenses, {summary.savingsRate.toFixed(1)}% savings rate) and powered by OpenRouter. Ask me anything!
             </p>
           </div>
 
@@ -223,8 +224,8 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
               className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {m.role === "assistant" && (
-                <div className="w-6 h-6 rounded-lg bg-teal-600 text-white flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs">
-                  <Bot className="w-3.5 h-3.5" />
+                <div className="w-6 h-6 rounded-full bg-teal-800 border border-amber-300/40 text-white flex items-center justify-center flex-shrink-0 mt-0.5 text-xs shadow-xs">
+                  <span>👧</span>
                 </div>
               )}
 
@@ -316,7 +317,7 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
       <OpenRouterModal
         isOpen={keyModalOpen}
         onClose={() => setKeyModalOpen(false)}
-        onKeySaved={() => setHasKey(true)}
+        onKeySaved={() => setHasPersonalKey(isPersonalKeyConfigured())}
       />
     </>
   );

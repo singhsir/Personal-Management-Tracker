@@ -82,3 +82,84 @@
 .animate-slide-in {
   animation: slideIn 0.2s ease-out;
 }
+
+/* Companion Character Animations */
+@keyframes companionBob {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0.5deg);
+  }
+}
+
+@keyframes companionShadow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(0.85);
+    opacity: 0.2;
+  }
+}
+
+@keyframes companionBlink {
+  0%, 96%, 100% {
+    transform: scaleY(1);
+  }
+  98% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes dupattaFloat {
+  0%, 100% {
+    transform: rotate(0deg) skewX(0deg);
+  }
+  50% {
+    transform: rotate(3.5deg) skewX(1.5deg);
+  }
+}
+
+@keyframes jhumkaSwing {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-6deg);
+  }
+}
+
+@keyframes namastePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04) translateY(-2px);
+  }
+}
+
+.companion-bob {
+  animation: companionBob 3.6s ease-in-out infinite;
+}
+
+.companion-shadow {
+  animation: companionShadow 3.6s ease-in-out infinite;
+}
+
+.companion-blink {
+  transform-origin: center;
+  animation: companionBlink 4.2s infinite;
+}
+
+.companion-dupatta {
+  transform-origin: top left;
+  animation: dupattaFloat 4.8s ease-in-out infinite;
+}
+
+.companion-jhumka {
+  transform-origin: top center;
+  animation: jhumkaSwing 2.8s ease-in-out infinite;
+}
+

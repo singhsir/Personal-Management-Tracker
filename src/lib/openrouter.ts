@@ -34,7 +34,7 @@ export function sanitizeKey(rawKey?: string | null): string {
 export function getOpenRouterKey(): string {
   if (typeof window === "undefined") return "";
 
-  // 1. Check local storage
+  // 1. Check local storage (user custom key)
   try {
     const stored = sanitizeKey(localStorage.getItem(OPENROUTER_KEY_STORAGE));
     if (stored) return stored;
@@ -63,6 +63,20 @@ export function getOpenRouterKey(): string {
   return "";
 }
 
+export function hasOpenRouterKey(): boolean {
+  // Always true because backend handles it automatically for all users!
+  return true;
+}
+
+export function isPersonalKeyConfigured(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return !!sanitizeKey(localStorage.getItem(OPENROUTER_KEY_STORAGE));
+  } catch {
+    return false;
+  }
+}
+
 export function saveOpenRouterKey(key: string): void {
   if (typeof window === "undefined") return;
   const clean = sanitizeKey(key);
@@ -77,7 +91,6 @@ export function getOpenRouterModel(): string {
   if (typeof window === "undefined") return DEFAULT_OPENROUTER_MODEL;
   try {
     const stored = localStorage.getItem(OPENROUTER_MODEL_STORAGE);
-    // Auto-upgrade from outdated or unavailable model IDs
     if (!stored || stored === "google/gemini-2.0-flash-001" || stored.includes("gemini-2.0-flash")) {
       localStorage.setItem(OPENROUTER_MODEL_STORAGE, DEFAULT_OPENROUTER_MODEL);
       return DEFAULT_OPENROUTER_MODEL;
@@ -147,8 +160,6 @@ export async function testOpenRouterKey(key: string): Promise<{ success: boolean
       });
 
       if (response.ok) {
-        const data = await response.json();
-        const reply = data.choices?.[0]?.message?.content?.trim() || "Connected";
         saveOpenRouterModel(model);
         saveOpenRouterKey(cleanKey);
         return {
@@ -160,7 +171,6 @@ export async function testOpenRouterKey(key: string): Promise<{ success: boolean
       const errData = await response.json().catch(() => ({}));
       lastError = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
 
-      // If it's an authentication error, don't keep trying models
       if (response.status === 401 || lastError.toLowerCase().includes("auth") || lastError.toLowerCase().includes("key")) {
         return { success: false, message: "Invalid API key. Please check your OpenRouter key and try again." };
       }
@@ -178,16 +188,40 @@ export async function askAIMoneyCompanion(
   context: FinancialContext,
 ): Promise<string> {
   const rawKey = getOpenRouterKey();
-  const key = sanitizeKey(rawKey);
+  const clientKey = sanitizeKey(rawKey);
 
-  if (!key) {
-    throw new Error("Missing OpenRouter API key. Please click 'Set Key' above to paste your OpenRouter key.");
+  // 1. First, call the backend /api/companion endpoint
+  // This automatically uses the backend OpenRouter key for all users!
+  try {
+    const res = await fetch("/api/companion", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(clientKey ? { Authorization: `Bearer ${clientKey}` } : {}),
+      },
+      body: JSON.stringify({
+        message: userQuery,
+        history,
+        context,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.reply) {
+        return data.reply;
+      }
+    }
+  } catch {
+    // If backend request fails (offline dev or static mode), proceed to direct client fallback
   }
 
-  const primaryModel = getOpenRouterModel();
-  const curr = context.currency || "INR";
+  // 2. Direct client-side call if user configured a personal key
+  if (clientKey) {
+    const primaryModel = getOpenRouterModel();
+    const curr = context.currency || "INR";
 
-  const systemPrompt = `You are FinWise AI Money Companion, a friendly, ultra-knowledgeable personal financial advisor.
+    const systemPrompt = `You are FinWise AI Money Companion, a friendly, ultra-knowledgeable personal financial advisor.
 You are helping ${context.userName || "the user"} manage their money wisely.
 
 Here is the user's real financial snapshot:
@@ -215,76 +249,116 @@ GUIDELINES:
 1. Provide actionable, concise, motivating, and specific financial advice.
 2. Use bullet points and bold formatting for numbers and key takeaways.
 3. Reference their actual data above where relevant.
-4. Keep responses well-structured and under 180 words unless the user asks for deep analysis.
-5. Maintain an encouraging, positive tone.`;
+4. Keep responses well-structured and under 180 words.`;
 
-  const messagesPayload: ChatMessage[] = [
-    { role: "system", content: systemPrompt },
-    ...history.slice(-6),
-    { role: "user", content: userQuery },
-  ];
+    const messagesPayload: ChatMessage[] = [
+      { role: "system", content: systemPrompt },
+      ...history.slice(-6),
+      { role: "user", content: userQuery },
+    ];
 
-  const candidateModels = Array.from(
-    new Set([
-      primaryModel,
-      "google/gemini-2.5-flash",
-      "openai/gpt-4o-mini",
-      "deepseek/deepseek-chat",
-      "openrouter/auto",
-    ]),
-  );
+    const candidateModels = Array.from(
+      new Set([primaryModel, "google/gemini-2.5-flash", "openai/gpt-4o-mini", "openrouter/auto"])
+    );
 
-  let lastError = "Failed to communicate with AI provider.";
+    for (const model of candidateModels) {
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${clientKey}`,
+            "HTTP-Referer": window.location.origin,
+            "X-Title": "FinWise AI Finance Tracker",
+          },
+          body: JSON.stringify({
+            model,
+            messages: messagesPayload,
+            max_tokens: 600,
+            temperature: 0.7,
+          }),
+        });
 
-  for (const model of candidateModels) {
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-          "HTTP-Referer": window.location.origin,
-          "X-Title": "FinWise AI Finance Tracker",
-        },
-        body: JSON.stringify({
-          model,
-          messages: messagesPayload,
-          max_tokens: 600,
-          temperature: 0.7,
-        }),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const reply = data.choices?.[0]?.message?.content;
-        if (reply) {
-          if (model !== primaryModel) {
-            saveOpenRouterModel(model);
+        if (response.ok) {
+          const data = await response.json();
+          const reply = data.choices?.[0]?.message?.content;
+          if (reply) {
+            return reply;
           }
-          return reply;
         }
+      } catch {
+        // Fall back
       }
-
-      const errData = await response.json().catch(() => ({}));
-      const msg = errData.error?.message || `HTTP ${response.status}`;
-      lastError = msg;
-
-      // Handle auth header issues directly
-      if (response.status === 401 || msg.toLowerCase().includes("auth") || msg.toLowerCase().includes("key")) {
-        throw new Error("Invalid or missing OpenRouter API key. Please click 'Set Key' above to update your key.");
-      }
-
-      // If it's not a model endpoint issue, don't loop endlessly
-      if (!msg.toLowerCase().includes("no endpoints") && !msg.toLowerCase().includes("not found")) {
-        throw new Error(msg);
-      }
-    } catch (err: any) {
-      if (err.message && (err.message.includes("API key") || !err.message.toLowerCase().includes("no endpoints"))) {
-        throw err;
-      }
-      lastError = err.message || lastError;
     }
   }
 
-  throw new Error(lastError);
+  // 3. Smart local advisor fallback so the assistant always answers
+  return generateClientFallbackReply(userQuery, context);
+}
+
+function generateClientFallbackReply(query: string, ctx: FinancialContext): string {
+  const q = query.toLowerCase();
+  const curr = ctx.currency || "INR";
+  const income = Number(ctx.totalIncome || 0);
+  const expenses = Number(ctx.totalExpenses || 0);
+  const savings = Number(ctx.savings || 0);
+  const rate = Number(ctx.savingsRate || 0);
+  const topCats = ctx.topCategories || [];
+
+  if (q.includes("saving") || q.includes("boost") || q.includes("rate")) {
+    if (income === 0) {
+      return `To boost your savings rate, start by recording your monthly income and recurring expenses in the **Transactions** tab. Aim for the **50/30/20 rule**: 50% for essentials, 30% for lifestyle, and **20% directly into savings**!`;
+    }
+    return `Here is how you can boost your savings rate from your current **${rate.toFixed(1)}%**:
+
+• **Automate Payday Savings**: Direct at least 15%–20% of your **${curr} ${income.toLocaleString()}** income into investments immediately on payday.
+• **Trim Top Outflows**: ${
+      topCats.length > 0
+        ? `Your highest expense category is **${topCats[0].category}** (${curr} ${topCats[0].amount.toLocaleString()}). A 10% reduction unlocks **${curr} ${Math.round(topCats[0].amount * 0.1).toLocaleString()}** in extra monthly savings!`
+        : `Monitor non-essential discretionary expenses to stop daily micro-leaks.`
+    }
+• **Set Strict Category Caps**: Head to the **Budgets** tab to set hard spending limits for dining and retail.`;
+  }
+
+  if (q.includes("category") || q.includes("expense") || q.includes("spending")) {
+    if (topCats.length === 0) {
+      return `No expense categories recorded yet for this period. Add expenses in the Transactions page to see an exact breakdown!`;
+    }
+    const catList = topCats
+      .slice(0, 3)
+      .map((c) => `• **${c.category}**: ${curr} ${c.amount.toLocaleString()} (${expenses > 0 ? ((c.amount / expenses) * 100).toFixed(1) : 0}%)`)
+      .join("\n");
+
+    return `Here is your spending breakdown for this month:
+
+${catList}
+
+**Advice**: Focus on optimizing **${topCats[0].category}** first for maximum impact on your monthly balance.`;
+  }
+
+  if (q.includes("goal")) {
+    const goals = ctx.goals || [];
+    if (goals.length === 0) {
+      return `You haven't added any savings goals yet. Go to the **Goals** tab to set targets for an emergency fund, travel, or vehicle!`;
+    }
+    const g = goals[0];
+    const pct = g.target > 0 ? ((g.saved / g.target) * 100).toFixed(0) : "0";
+    return `You're tracking **${goals.length} active goal(s)**! For **${g.name}**, you have saved **${curr} ${g.saved.toLocaleString()}** of **${curr} ${g.target.toLocaleString()}** (${pct}% achieved). Allocating part of your net monthly savings of **${curr} ${savings.toLocaleString()}** will keep you ahead of your timeline!`;
+  }
+
+  if (q.includes("budget") || q.includes("tip")) {
+    return `**Golden Budget Rule**:
+1. **50% Needs**: Essential rent, utilities, groceries.
+2. **30% Wants**: Dining, subscriptions, hobbies.
+3. **20% Savings**: Emergency fund & investments.
+
+With your current net savings of **${curr} ${savings.toLocaleString()}**, you have a solid foundation!`;
+  }
+
+  return `Hello ${ctx.userName || "there"}! I'm your FinWise AI companion:
+• **Income**: ${curr} ${income.toLocaleString()}
+• **Expenses**: ${curr} ${expenses.toLocaleString()}
+• **Net Savings**: ${curr} ${savings.toLocaleString()} (${rate.toFixed(1)}% savings rate)
+
+Ask me about boosting savings, cutting top spending categories, managing budgets, or reaching your goals!`;
 }

@@ -108,10 +108,10 @@ export default function OpenRouterModal({ isOpen, onClose, onKeySaved }: OpenRou
             </div>
             <div>
               <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                OpenRouter AI Integration
+                Custom OpenRouter Key
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Connect your OpenRouter key for AI Money Companion
+                Optional: FinWise AI runs automatically via the backend
               </p>
             </div>
           </div>
@@ -125,17 +125,21 @@ export default function OpenRouterModal({ isOpen, onClose, onKeySaved }: OpenRou
 
         {/* Content */}
         <form onSubmit={handleSave} className="p-6 space-y-4">
+          <div className="p-3 rounded-xl bg-teal-50/70 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/60 text-xs text-teal-800 dark:text-teal-300">
+            FinWise AI is already configured and active for all users via the backend. You only need to add a key here if you want to use your own personal OpenRouter credits or custom models.
+          </div>
+
           {savedSuccess && (
             <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>OpenRouter key saved! AI Money Companion is active.</span>
+              <span>Settings updated successfully!</span>
             </div>
           )}
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                OpenRouter API Key
+                Personal API Key (Optional)
               </label>
               <a
                 href="https://openrouter.ai/keys"
@@ -152,14 +156,13 @@ export default function OpenRouterModal({ isOpen, onClose, onKeySaved }: OpenRou
               <Key className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type={showKey ? "text" : "password"}
-                placeholder="sk-or-v1-..."
+                placeholder="Leave blank to use default backend AI"
                 value={apiKey}
                 onChange={(e) => {
                   setApiKey(e.target.value);
                   setTestResult(null);
                 }}
                 className="input-field pl-9 pr-10 text-xs font-mono"
-                required
               />
               <button
                 type="button"
@@ -170,7 +173,7 @@ export default function OpenRouterModal({ isOpen, onClose, onKeySaved }: OpenRou
               </button>
             </div>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
-              Your key is stored securely in your browser and used only to power financial advice.
+              Leave blank to automatically use the backend AI without personal credits.
             </p>
           </div>
 

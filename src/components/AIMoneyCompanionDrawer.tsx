@@ -20,6 +20,7 @@ import { calculateSummary, formatCurrency } from "@/lib/calculations";
 import {
   getOpenRouterKey,
   getOpenRouterModel,
+  isPersonalKeyConfigured,
   askAIMoneyCompanion,
   type ChatMessage,
   type FinancialContext,
@@ -54,8 +55,10 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
   const currency = profile?.currency || "INR";
   const summary = calculateSummary(transactions);
 
+  const [hasPersonalKey, setHasPersonalKey] = useState(false);
+
   useEffect(() => {
-    setHasKey(!!getOpenRouterKey());
+    setHasPersonalKey(isPersonalKeyConfigured());
   }, [open, keyModalOpen]);
 
   // Build real-time financial context
@@ -152,7 +155,7 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                {hasKey ? `Powered by ${getOpenRouterModel().split("/")[1] || "OpenRouter"}` : "OpenRouter Not Configured"}
+                {hasPersonalKey ? `Custom Model: ${getOpenRouterModel().split("/")[1] || "Active"}` : "FinWise AI Agent • Active"}
               </p>
             </div>
           </div>
@@ -160,15 +163,15 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
           <div className="flex items-center gap-1">
             <button
               onClick={() => setKeyModalOpen(true)}
-              title="OpenRouter API Key Settings"
+              title="OpenRouter API Key Settings (Optional)"
               className={`p-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors ${
-                hasKey
+                hasPersonalKey
                   ? "text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/60"
-                  : "text-amber-700 bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#0c3137]"
               }`}
             >
               <Key className="w-3.5 h-3.5" />
-              <span className="text-[10px]">{hasKey ? "Key Active" : "Set Key"}</span>
+              <span className="text-[10px]">{hasPersonalKey ? "Custom Key" : "API Key"}</span>
             </button>
 
             <button
@@ -182,26 +185,6 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
 
         {/* Chat / Messages Body */}
         <div className="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
-          {/* Key Notice if missing */}
-          {!hasKey && (
-            <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 text-amber-900 dark:text-amber-300 text-xs space-y-2">
-              <div className="flex items-center gap-1.5 font-bold">
-                <AlertCircle className="w-4 h-4 text-amber-600" />
-                <span>OpenRouter Key Required</span>
-              </div>
-              <p className="text-[11px] leading-relaxed">
-                Connect your personal OpenRouter API Key to unlock real-time financial coaching, smart budget advice, and instant answers tailored to your account.
-              </p>
-              <button
-                onClick={() => setKeyModalOpen(true)}
-                className="w-full py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1 shadow-xs"
-              >
-                <Key className="w-3.5 h-3.5" />
-                <span>Configure OpenRouter Key</span>
-              </button>
-            </div>
-          )}
-
           {/* Intro greeting */}
           <div className="p-3.5 rounded-2xl bg-teal-50/70 dark:bg-[#06262a] border border-teal-100/80 dark:border-teal-900/50 text-slate-700 dark:text-slate-200">
             <p className="font-semibold text-teal-900 dark:text-teal-200 mb-1">

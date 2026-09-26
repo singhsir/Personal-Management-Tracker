@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import Transactions from "@/pages/Transactions";
 import Insights from "@/pages/Insights";
 import Budgets from "@/pages/Budgets";
+import Goals from "@/pages/Goals";
 import Settings from "@/pages/Settings";
 
 function PublicRoute({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,7 @@ function AppRoutes() {
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/insights" element={<Insights />} />
         <Route path="/budgets" element={<Budgets />} />
+        <Route path="/goals" element={<Goals />} />
         <Route path="/settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

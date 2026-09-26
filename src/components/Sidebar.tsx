@@ -4,6 +4,7 @@ import {
   Receipt,
   Sparkles,
   PieChart,
+  Target,
   Settings,
   LogOut,
   X,
@@ -24,6 +25,7 @@ const navItems = [
   { to: "/transactions", label: "Transactions", icon: Receipt },
   { to: "/insights", label: "AI Insights", icon: Sparkles },
   { to: "/budgets", label: "Budgets", icon: PieChart },
+  { to: "/goals", label: "Goals", icon: Target },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

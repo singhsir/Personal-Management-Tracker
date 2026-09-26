@@ -27,6 +27,7 @@ import NotificationPopover from "@/components/NotificationPopover";
 import UserAvatarMenu from "@/components/UserAvatarMenu";
 import ThemeToggle from "@/components/ThemeToggle";
 import TransactionModal from "@/components/TransactionModal";
+import AIMoneyCompanionDrawer from "@/components/AIMoneyCompanionDrawer";
 
 export default function Dashboard() {
   const { profile, user } = useAuthContext();
@@ -199,39 +200,10 @@ export default function Dashboard() {
       </button>
 
       {/* AI Assistant Quick Drawer */}
-      {aiDrawerOpen && (
-        <div className="fixed bottom-24 right-6 w-80 bg-white dark:bg-[#072428] rounded-3xl shadow-2xl border border-slate-200 dark:border-[#0e3b42] p-5 z-50 animate-fade-in">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#0e3b42] mb-3">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">FinWise AI Assistant</h4>
-            </div>
-            <button
-              onClick={() => setAiDrawerOpen(false)}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-sm"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-            Hello <b>{displayName}</b>! Based on your {selectedMonth} activity:
-          </p>
-          {summary.totalExpenses > 0 ? (
-            <div className="mt-3 space-y-2 text-xs">
-              <div className="p-2.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-100 dark:border-teal-900/50 text-teal-900 dark:text-teal-200">
-                💡 You have saved <b>{formatCurrency(summary.savings, currency)}</b> this month. Keep up the balanced budget!
-              </div>
-              <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 text-rose-900 dark:text-rose-200">
-                📊 Total spending: <b>{formatCurrency(summary.totalExpenses, currency)}</b> across your active categories.
-              </div>
-            </div>
-          ) : (
-            <div className="mt-3 p-3 rounded-xl bg-slate-50 dark:bg-[#093238] border border-slate-100 dark:border-[#0e434c] text-slate-600 dark:text-slate-300 text-xs">
-              No expenses recorded for this period yet. Click <b>Add Transaction</b> to start tracking your finances!
-            </div>
-          )}
-        </div>
-      )}
+      <AIMoneyCompanionDrawer
+        open={aiDrawerOpen}
+        onClose={() => setAiDrawerOpen(false)}
+      />
 
       {/* Transaction Modal */}
       <TransactionModal

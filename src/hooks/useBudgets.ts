@@ -29,23 +29,28 @@ export function useBudgets(targetMonth?: string) {
     if (!targetMonth) return local;
     return local.filter((b) => b.month === targetMonth);
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchBudgets = useCallback(async () => {
-    setLoading(true);
     const local = getSavedUserBudgets().filter((b) => !targetMonth || b.month === targetMonth);
 
     let supabaseBudgets: Budget[] = [];
     try {
       let query = supabase.from("budgets").select("*");
       if (targetMonth) query = query.eq("month", targetMonth);
-      const { data, error: err } = await query.order("category", { ascending: true });
-      if (!err && data) {
-        supabaseBudgets = data as Budget[];
+      
+      const fetchPromise = query.order("category", { ascending: true });
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((resolve) =>
+        setTimeout(() => resolve({ data: null, error: new Error("Timeout") }), 2500),
+      );
+
+      const res = await Promise.race([fetchPromise, timeoutPromise]);
+      if (res && "data" in res && res.data) {
+        supabaseBudgets = res.data as Budget[];
       }
     } catch {
-      // Ignore Supabase RLS / network errors in offline/guest mode
+      // Fallback to local
     }
 
     const map = new Map<string, Budget>();
@@ -119,6 +124,23 @@ export function useBudgets(targetMonth?: string) {
     return savedBudget;
   };
 
+  const updateBudget = async (id: string, updates: Partial<NewBudget>): Promise<boolean> => {
+    if (!id.startsWith("budget-")) {
+      try {
+        await supabase.from("budgets").update(updates).eq("id", id);
+      } catch (err) {
+        console.error("Error updating in Supabase:", err);
+      }
+    }
+
+    const local = getSavedUserBudgets();
+    const updated = local.map((b) => (b.id === id ? { ...b, ...updates } : b));
+    saveUserBudgets(updated);
+
+    setBudgets((prev) => prev.map((b) => (b.id === id ? { ...b, ...updates } : b)));
+    return true;
+  };
+
   const deleteBudget = async (id: string): Promise<boolean> => {
     if (!id.startsWith("budget-")) {
       try {
@@ -141,6 +163,7 @@ export function useBudgets(targetMonth?: string) {
     loading,
     error,
     addBudget,
+    updateBudget,
     deleteBudget,
     fetchBudgets,
   };

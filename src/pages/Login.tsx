@@ -202,11 +202,14 @@ export default function Login({ initialMode }: { initialMode?: AuthMode }) {
         <div className="absolute top-0 right-0 w-96 h-96 bg-teal-600/30 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-72 h-72 bg-teal-800/40 rounded-full blur-3xl translate-y-1/2" />
 
-        <div className="relative z-10 flex items-center gap-2.5">
-          <div className="bg-white/15 backdrop-blur-sm rounded-xl p-2">
-            <Wallet className="w-6 h-6" />
+        <div className="relative z-10 flex items-center gap-3.5">
+          <div className="w-14 h-14 rounded-2xl overflow-hidden shadow-2xl border-2 border-teal-400/40 bg-black/60 p-0.5">
+            <img src="/finwise-logo.png" alt="FinWise AI Logo" className="w-full h-full object-cover object-top rounded-xl" />
           </div>
-          <span className="text-xl font-bold tracking-tight">FinWise AI</span>
+          <div>
+            <span className="text-2xl font-extrabold tracking-tight block">FinWise AI</span>
+            <span className="text-xs text-teal-200/90 font-medium block">Use your money smarter</span>
+          </div>
         </div>
 
         <div className="relative z-10 my-12 lg:my-0">
@@ -242,11 +245,14 @@ export default function Login({ initialMode }: { initialMode?: AuthMode }) {
         </div>
 
         <div className="w-full max-w-sm">
-          <div className="lg:hidden flex items-center gap-2.5 mb-8">
-            <div className="bg-teal-600 rounded-xl p-2 text-white">
-              <Wallet className="w-6 h-6" />
+          <div className="lg:hidden flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-2xl overflow-hidden shadow-lg border border-teal-500/30 bg-[#021d1f] p-0.5">
+              <img src="/finwise-logo.png" alt="FinWise AI Logo" className="w-full h-full object-cover object-top rounded-xl" />
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">FinWise AI</span>
+            <div>
+              <span className="text-xl font-bold text-gray-900 dark:text-white block">FinWise AI</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block">Use your money smarter</span>
+            </div>
           </div>
 
           {/* Error Banner */}

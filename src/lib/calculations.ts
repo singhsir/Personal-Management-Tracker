@@ -118,7 +118,14 @@ export function getMonthLabel(year: number, month: number): string {
 
 export function getGreeting(name: string): string {
   const hour = new Date().getHours();
-  if (hour < 12) return `Good morning, ${name}`;
-  if (hour < 17) return `Good afternoon, ${name}`;
-  return `Good evening, ${name}`;
+  if (hour >= 5 && hour < 12) {
+    return `Welcome, Good morning, ${name}`;
+  } else if (hour >= 12 && hour < 17) {
+    return `Welcome, Good afternoon, ${name}`;
+  } else if (hour >= 17 && hour < 22) {
+    return `Welcome, Good evening, ${name}`;
+  } else {
+    return `Welcome, Hello, ${name}`;
+  }
 }
+

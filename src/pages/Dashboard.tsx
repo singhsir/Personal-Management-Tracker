@@ -17,7 +17,7 @@ import { useTransactions } from "@/hooks/useTransactions";
 import type { NewTransaction } from "@/lib/types";
 
 import { Link } from "react-router-dom";
-import { calculateSummary, formatCurrency } from "@/lib/calculations";
+import { calculateSummary, formatCurrency, getGreeting } from "@/lib/calculations";
 import FinancialHealthCard from "@/components/FinancialHealthCard";
 import SummaryCard from "@/components/SummaryCard";
 import SpendingChart from "@/components/SpendingChart";
@@ -45,6 +45,7 @@ export default function Dashboard() {
     "User";
   const currency = profile?.currency || "INR";
   const summary = calculateSummary(transactions);
+  const greeting = getGreeting(displayName);
 
   const handleAddTransaction = async (tx: NewTransaction) => {
     return await addTransaction(tx);
@@ -56,7 +57,7 @@ export default function Dashboard() {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            Good morning, {displayName}{" "}
+            {greeting}{" "}
             <span className="inline-block hover:rotate-12 transition-transform cursor-default">👋</span>
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5 font-medium">

@@ -64,8 +64,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           {/* Logo & Close button */}
           <div className="flex items-start justify-between mb-8">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#095c52] flex items-center justify-center text-teal-200 shadow-md border border-[#0d796c] flex-shrink-0">
-                <DollarSign className="w-6 h-6 text-teal-300" />
+              <div className="w-11 h-11 rounded-2xl overflow-hidden shadow-lg border border-teal-500/30 bg-[#021d1f] flex items-center justify-center flex-shrink-0 group relative p-0.5">
+                <img
+                  src="/finwise-logo.png"
+                  alt="FinWise AI Logo"
+                  className="w-full h-full object-cover object-top rounded-xl transition-transform group-hover:scale-105"
+                />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
@@ -74,8 +78,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                <p className="text-[11px] leading-tight text-teal-200/60 font-normal mt-0.5">
-                  Understand your money,<br />not just your transactions.
+                <p className="text-[11px] leading-tight text-teal-200/80 font-normal mt-0.5">
+                  Use your money smarter
                 </p>
               </div>
             </div>

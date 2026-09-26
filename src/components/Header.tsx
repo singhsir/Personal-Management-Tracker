@@ -30,7 +30,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
         >
           <Menu className="w-6 h-6" />
         </button>
-        <span className="font-bold text-slate-900 dark:text-white text-sm">FinWise AI</span>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg overflow-hidden border border-teal-500/30 bg-[#021d1f] flex items-center justify-center p-0.5">
+            <img src="/finwise-logo.png" alt="FinWise AI" className="w-full h-full object-cover object-top rounded-md" />
+          </div>
+          <span className="font-bold text-slate-900 dark:text-white text-sm">FinWise AI</span>
+        </div>
 
         <div className="flex items-center gap-2">
           {/* AI Money Agent button */}

@@ -17,6 +17,7 @@ import {
   getOpenRouterModel,
   saveOpenRouterModel,
   testOpenRouterKey,
+  sanitizeKey,
   POPULAR_MODELS,
 } from "@/lib/openrouter";
 
@@ -58,21 +59,33 @@ export default function OpenRouterModal({ isOpen, onClose, onKeySaved }: OpenRou
   if (!isOpen) return null;
 
   const handleTest = async () => {
-    if (!apiKey.trim()) {
-      setTestResult({ success: false, message: "Please enter your OpenRouter key first." });
+    const cleanKey = sanitizeKey(apiKey);
+    if (!cleanKey) {
+      setTestResult({
+        success: false,
+        message: "Please enter a valid OpenRouter API key (starts with sk-or-...).",
+      });
       return;
     }
     setTesting(true);
     setTestResult(null);
-    const result = await testOpenRouterKey(apiKey.trim());
+    const result = await testOpenRouterKey(cleanKey);
     setTesting(false);
     setTestResult(result);
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanKey = apiKey.trim();
+    const cleanKey = sanitizeKey(apiKey);
+    if (!cleanKey && apiKey.trim()) {
+      setTestResult({
+        success: false,
+        message: "Key format invalid. OpenRouter keys start with sk-or- and are at least 15 characters long.",
+      });
+      return;
+    }
     saveOpenRouterKey(cleanKey);
+    setApiKey(cleanKey);
 
     const modelToSave = isCustom ? customModel.trim() || selectedModel : selectedModel;
     saveOpenRouterModel(modelToSave);

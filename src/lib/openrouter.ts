@@ -1,3 +1,5 @@
+declare const __OPENROUTER_API_KEY__: string | undefined;
+
 export const OPENROUTER_KEY_STORAGE = "finwise_openrouter_api_key";
 export const OPENROUTER_MODEL_STORAGE = "finwise_openrouter_model";
 
@@ -11,19 +13,49 @@ export const POPULAR_MODELS = [
   { id: "meta-llama/llama-3.3-70b-instruct", name: "Meta Llama 3.3 70B" },
 ];
 
+export function sanitizeKey(rawKey?: string | null): string {
+  if (!rawKey || typeof rawKey !== "string") return "";
+  let k = rawKey.trim();
+  while ((k.startsWith('"') && k.endsWith('"')) || (k.startsWith("'") && k.endsWith("'"))) {
+    k = k.slice(1, -1).trim();
+  }
+  if (k.toLowerCase().startsWith("bearer ")) {
+    k = k.substring(7).trim();
+  }
+  if (k === "undefined" || k === "null" || k === "[object Object]") {
+    return "";
+  }
+  if (k.length < 8) {
+    return "";
+  }
+  return k;
+}
+
 export function getOpenRouterKey(): string {
   if (typeof window === "undefined") return "";
-  const stored = localStorage.getItem(OPENROUTER_KEY_STORAGE);
-  if (stored && stored.trim()) return stored.trim();
 
-  // Check Vite env
-  const envKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-  if (envKey && typeof envKey === "string" && envKey.trim()) return envKey.trim();
-
-  // Check process.env (Vercel deployment)
+  // 1. Check local storage
   try {
-    const processKey = process.env.OPENROUTER_API_KEY;
-    if (processKey && typeof processKey === "string" && processKey.trim()) return processKey.trim();
+    const stored = sanitizeKey(localStorage.getItem(OPENROUTER_KEY_STORAGE));
+    if (stored) return stored;
+  } catch {
+    // Ignore
+  }
+
+  // 2. Check bundled build-time key from Vercel or .env
+  try {
+    if (typeof __OPENROUTER_API_KEY__ !== "undefined") {
+      const buildKey = sanitizeKey(__OPENROUTER_API_KEY__);
+      if (buildKey) return buildKey;
+    }
+  } catch {
+    // Ignore
+  }
+
+  // 3. Check standard import.meta.env
+  try {
+    const envKey = sanitizeKey(import.meta.env.VITE_OPENROUTER_API_KEY);
+    if (envKey) return envKey;
   } catch {
     // Ignore
   }
@@ -33,27 +65,36 @@ export function getOpenRouterKey(): string {
 
 export function saveOpenRouterKey(key: string): void {
   if (typeof window === "undefined") return;
-  if (!key.trim()) {
+  const clean = sanitizeKey(key);
+  if (!clean) {
     localStorage.removeItem(OPENROUTER_KEY_STORAGE);
   } else {
-    localStorage.setItem(OPENROUTER_KEY_STORAGE, key.trim());
+    localStorage.setItem(OPENROUTER_KEY_STORAGE, clean);
   }
 }
 
 export function getOpenRouterModel(): string {
   if (typeof window === "undefined") return DEFAULT_OPENROUTER_MODEL;
-  const stored = localStorage.getItem(OPENROUTER_MODEL_STORAGE);
-  // Auto-upgrade from outdated or unavailable model IDs
-  if (!stored || stored === "google/gemini-2.0-flash-001" || stored.includes("gemini-2.0-flash")) {
-    localStorage.setItem(OPENROUTER_MODEL_STORAGE, DEFAULT_OPENROUTER_MODEL);
+  try {
+    const stored = localStorage.getItem(OPENROUTER_MODEL_STORAGE);
+    // Auto-upgrade from outdated or unavailable model IDs
+    if (!stored || stored === "google/gemini-2.0-flash-001" || stored.includes("gemini-2.0-flash")) {
+      localStorage.setItem(OPENROUTER_MODEL_STORAGE, DEFAULT_OPENROUTER_MODEL);
+      return DEFAULT_OPENROUTER_MODEL;
+    }
+    return stored;
+  } catch {
     return DEFAULT_OPENROUTER_MODEL;
   }
-  return stored;
 }
 
 export function saveOpenRouterModel(model: string): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(OPENROUTER_MODEL_STORAGE, model);
+  try {
+    localStorage.setItem(OPENROUTER_MODEL_STORAGE, model);
+  } catch {
+    // Ignore
+  }
 }
 
 export interface ChatMessage {
@@ -74,9 +115,9 @@ export interface FinancialContext {
 }
 
 export async function testOpenRouterKey(key: string): Promise<{ success: boolean; message: string }> {
-  const cleanKey = key.trim();
+  const cleanKey = sanitizeKey(key);
   if (!cleanKey) {
-    return { success: false, message: "Please provide an API key." };
+    return { success: false, message: "Please enter a valid OpenRouter API key (e.g. sk-or-v1-...)." };
   }
 
   const modelsToTry = [
@@ -86,7 +127,7 @@ export async function testOpenRouterKey(key: string): Promise<{ success: boolean
     "openrouter/auto",
   ];
 
-  let lastError = "Unable to connect.";
+  let lastError = "Unable to connect to OpenRouter.";
 
   for (const model of modelsToTry) {
     try {
@@ -108,16 +149,21 @@ export async function testOpenRouterKey(key: string): Promise<{ success: boolean
       if (response.ok) {
         const data = await response.json();
         const reply = data.choices?.[0]?.message?.content?.trim() || "Connected";
-        // If this model worked and differed from stored, update to working model
         saveOpenRouterModel(model);
+        saveOpenRouterKey(cleanKey);
         return {
           success: true,
-          message: `Connected successfully using ${model.split("/")[1]}!`,
+          message: `Connected successfully with ${model.split("/")[1]}!`,
         };
       }
 
       const errData = await response.json().catch(() => ({}));
-      lastError = errData.error?.message || `HTTP ${response.status}`;
+      lastError = errData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+
+      // If it's an authentication error, don't keep trying models
+      if (response.status === 401 || lastError.toLowerCase().includes("auth") || lastError.toLowerCase().includes("key")) {
+        return { success: false, message: "Invalid API key. Please check your OpenRouter key and try again." };
+      }
     } catch (e) {
       lastError = e instanceof Error ? e.message : "Network error";
     }
@@ -131,9 +177,11 @@ export async function askAIMoneyCompanion(
   history: ChatMessage[],
   context: FinancialContext,
 ): Promise<string> {
-  const key = getOpenRouterKey();
+  const rawKey = getOpenRouterKey();
+  const key = sanitizeKey(rawKey);
+
   if (!key) {
-    throw new Error("No OpenRouter API key found. Please enter your OpenRouter key in Settings or click Set Key.");
+    throw new Error("Missing OpenRouter API key. Please click 'Set Key' above to paste your OpenRouter key.");
   }
 
   const primaryModel = getOpenRouterModel();
@@ -176,7 +224,6 @@ GUIDELINES:
     { role: "user", content: userQuery },
   ];
 
-  // Models to attempt: primary model first, followed by fallbacks if provider gives 404 or "No endpoints found"
   const candidateModels = Array.from(
     new Set([
       primaryModel,
@@ -211,7 +258,6 @@ GUIDELINES:
         const data = await response.json();
         const reply = data.choices?.[0]?.message?.content;
         if (reply) {
-          // If a fallback was needed, save this working model
           if (model !== primaryModel) {
             saveOpenRouterModel(model);
           }
@@ -223,12 +269,17 @@ GUIDELINES:
       const msg = errData.error?.message || `HTTP ${response.status}`;
       lastError = msg;
 
+      // Handle auth header issues directly
+      if (response.status === 401 || msg.toLowerCase().includes("auth") || msg.toLowerCase().includes("key")) {
+        throw new Error("Invalid or missing OpenRouter API key. Please click 'Set Key' above to update your key.");
+      }
+
       // If it's not a model endpoint issue, don't loop endlessly
       if (!msg.toLowerCase().includes("no endpoints") && !msg.toLowerCase().includes("not found")) {
         throw new Error(msg);
       }
     } catch (err: any) {
-      if (err.message && !err.message.toLowerCase().includes("no endpoints")) {
+      if (err.message && (err.message.includes("API key") || !err.message.toLowerCase().includes("no endpoints"))) {
         throw err;
       }
       lastError = err.message || lastError;

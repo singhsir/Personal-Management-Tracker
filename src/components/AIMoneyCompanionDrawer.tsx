@@ -271,8 +271,18 @@ export default function AIMoneyCompanionDrawer({ open, onClose }: AIMoneyCompani
           )}
 
           {error && (
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 text-xs text-rose-700 dark:text-rose-300">
-              {error}
+            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 space-y-2">
+              <div className="flex items-start gap-1.5 font-semibold">
+                <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
+                <span className="leading-snug">{error}</span>
+              </div>
+              <button
+                onClick={() => setKeyModalOpen(true)}
+                className="w-full py-2 px-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs active:scale-95"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span>Enter / Update OpenRouter Key</span>
+              </button>
             </div>
           )}
 
